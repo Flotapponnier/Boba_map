@@ -27,7 +27,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
     try {
       const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/signup";
-      const body = mode === "login" 
+      const body = mode === "login"
         ? { email, password }
         : { username, email, password };
 
@@ -45,7 +45,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
       onSuccess(data.user);
       onClose();
-      
+
       // Reset form
       setUsername("");
       setEmail("");
@@ -58,55 +58,67 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+      <div
+        className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
-      <div className="relative bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-        {/* Header decoration */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400" />
-        
+      <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden">
+        {/* Decorative header with boba illustration */}
+        <div className="relative h-32 bg-gradient-to-br from-amber-100 via-orange-50 to-amber-50 overflow-hidden">
+          {/* Bubble decorations */}
+          <div className="absolute top-4 left-8 w-6 h-6 rounded-full bg-amber-200/60" />
+          <div className="absolute top-12 left-16 w-4 h-4 rounded-full bg-orange-200/60" />
+          <div className="absolute top-6 right-12 w-8 h-8 rounded-full bg-amber-200/40" />
+          <div className="absolute bottom-8 right-8 w-5 h-5 rounded-full bg-orange-200/50" />
+
+          {/* Boba cup */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-xl shadow-amber-200">
+              <span className="text-4xl">🧋</span>
+            </div>
+          </div>
+        </div>
+
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 hover:bg-white text-gray-500 hover:text-gray-700 transition-all shadow-sm"
+          className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 hover:bg-white text-stone-400 hover:text-stone-600 transition-all shadow-sm hover:shadow"
         >
-          ✕
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
 
-        <div className="p-8 pt-10">
-          {/* Logo/Title */}
+        <div className="p-8 pt-14">
+          {/* Title */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg mb-4">
-              <span className="text-3xl">🧋</span>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-2xl font-bold text-stone-800">
               {mode === "login" ? "Welcome back!" : "Join Boba Map"}
             </h2>
-            <p className="text-gray-500 mt-1">
-              {mode === "login" 
-                ? "Sign in to share your discoveries" 
+            <p className="text-stone-500 mt-2">
+              {mode === "login"
+                ? "Sign in to share your discoveries"
                 : "Create an account to start posting"}
             </p>
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-2">
-              <span>⚠️</span>
-              {error}
+            <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-sm flex items-center gap-3">
+              <span className="text-lg">😅</span>
+              <span>{error}</span>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {mode === "signup" && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-semibold text-stone-600 mb-2">
                   Username
                 </label>
                 <input
@@ -116,13 +128,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   placeholder="boba_lover"
                   required
                   minLength={3}
-                  className="w-full px-4 py-3 rounded-xl border border-amber-200 bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-200 outline-none transition-all placeholder:text-gray-400"
+                  className="w-full px-4 py-3.5 rounded-2xl border-2 border-amber-100 bg-amber-50/30 focus:border-amber-300 focus:ring-4 focus:ring-amber-100 outline-none transition-all placeholder:text-stone-400"
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-semibold text-stone-600 mb-2">
                 Email
               </label>
               <input
@@ -131,12 +143,12 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full px-4 py-3 rounded-xl border border-amber-200 bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-200 outline-none transition-all placeholder:text-gray-400"
+                className="w-full px-4 py-3.5 rounded-2xl border-2 border-amber-100 bg-amber-50/30 focus:border-amber-300 focus:ring-4 focus:ring-amber-100 outline-none transition-all placeholder:text-stone-400"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-semibold text-stone-600 mb-2">
                 Password
               </label>
               <input
@@ -146,14 +158,14 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="w-full px-4 py-3 rounded-xl border border-amber-200 bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-200 outline-none transition-all placeholder:text-gray-400"
+                className="w-full px-4 py-3.5 rounded-2xl border-2 border-amber-100 bg-amber-50/30 focus:border-amber-300 focus:ring-4 focus:ring-amber-100 outline-none transition-all placeholder:text-stone-400"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-amber-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-4 px-4 bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-2xl shadow-lg shadow-amber-200/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-amber-300/50 active:scale-[0.98]"
             >
               {loading ? (
                 <>
@@ -162,7 +174,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 </>
               ) : (
                 <>
-                  <span>🧋</span>
+                  <span className="text-lg">🧋</span>
                   {mode === "login" ? "Sign In" : "Create Account"}
                 </>
               )}
@@ -170,15 +182,15 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           </form>
 
           {/* Toggle mode */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-500">
+          <div className="mt-8 text-center">
+            <p className="text-stone-500">
               {mode === "login" ? "Don't have an account?" : "Already have an account?"}
               <button
                 onClick={() => {
                   setMode(mode === "login" ? "signup" : "login");
                   setError(null);
                 }}
-                className="ml-2 text-amber-600 hover:text-amber-700 font-medium transition-colors"
+                className="ml-2 text-amber-500 hover:text-amber-600 font-semibold transition-colors"
               >
                 {mode === "login" ? "Sign up" : "Sign in"}
               </button>
@@ -189,4 +201,3 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
     </div>
   );
 }
-

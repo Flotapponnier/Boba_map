@@ -296,28 +296,28 @@ function MapController({
 
 // Map click handler component
 interface MapClickHandlerProps {
-  onMapClick: (lat: number, lng: number) => void;
+  onMapClick?: (lat: number, lng: number) => void;
   isSelectingPosition: boolean;
 }
 
 function MapClickHandler({ onMapClick, isSelectingPosition }: MapClickHandlerProps) {
   const map = useMap();
-  
+
   useEffect(() => {
-    if (!isSelectingPosition) return;
-    
+    if (!isSelectingPosition || !onMapClick) return;
+
     const handleClick = (e: L.LeafletMouseEvent) => {
       console.log("Map clicked:", e.latlng);
       onMapClick(e.latlng.lat, e.latlng.lng);
     };
-    
+
     map.on('click', handleClick);
-    
+
     return () => {
       map.off('click', handleClick);
     };
   }, [map, isSelectingPosition, onMapClick]);
-  
+
   return null;
 }
 
@@ -329,7 +329,8 @@ interface MapProps {
   onMapClick?: (lat: number, lng: number) => void;
   isSelectingPosition?: boolean;
   selectedPosition?: { lat: number; lng: number } | null;
-  onPostClick?: (post: unknown) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onPostClick?: (post: any) => void;
 }
 
 export function Map({

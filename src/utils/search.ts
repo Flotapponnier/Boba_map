@@ -99,7 +99,7 @@ function calculateRelevance(place: Place, query: string): number {
     if (word.length < 3) continue;
 
     if (place.name.toLowerCase().includes(word)) score += 5;
-    if (place.description.toLowerCase().includes(word)) score += 3;
+    if (place.description?.toLowerCase().includes(word)) score += 3;
     if (place.tags?.some((tag) => tag.includes(word))) score += 4;
   }
 
@@ -158,7 +158,7 @@ export function searchPlaces(places: Place[], query: string, userPosts: Place[] 
       queryWords.some(
         (word) =>
           place.name.toLowerCase().includes(word) ||
-          place.description.toLowerCase().includes(word) ||
+          place.description?.toLowerCase().includes(word) ||
           (place.tags?.some((tag) => tag.includes(word)) ?? false)
       );
 

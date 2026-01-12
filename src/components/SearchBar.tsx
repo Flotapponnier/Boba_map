@@ -9,12 +9,12 @@ interface SearchBarProps {
 }
 
 const EXAMPLE_QUERIES = [
-  "i want a cheap hotel",
-  "i want an expensive hotel",
-  "where to eat a good kebab",
+  "cheap hotel",
+  "best kebab",
   "bitcoin event",
-  "i want to learn music",
-  "best bar in town",
+  "learn music",
+  "cozy bar",
+  "coworking",
 ];
 
 export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
@@ -39,37 +39,53 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4">
-      <form onSubmit={handleSubmit} className="flex items-center gap-3">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ask anything... e.g., 'where to eat a good kebab'"
-          className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
-          disabled={isLoading}
-        />
-        <button
-          type="submit"
-          disabled={isLoading || !query.trim()}
-          className="px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          Search
-        </button>
+    <div className="space-y-3 lg:space-y-4">
+      {/* Main search form */}
+      <form onSubmit={handleSubmit} className="relative">
+        <div className="flex items-center gap-2 lg:gap-3">
+          {/* Search input with boba icon */}
+          <div className="relative flex-1">
+            <div className="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 text-lg lg:text-xl pointer-events-none">
+              🧋
+            </div>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="What are you looking for?"
+              className="w-full pl-10 lg:pl-12 pr-3 lg:pr-4 py-3 lg:py-4 bg-white border-2 border-amber-100 rounded-xl lg:rounded-2xl text-stone-800 placeholder-stone-400 focus:outline-none focus:border-amber-300 focus:ring-4 focus:ring-amber-100 transition-all text-sm lg:text-base shadow-sm"
+              disabled={isLoading}
+            />
+          </div>
 
-        {/* Boba Mascot - appears after the search button */}
-        <BobaMascot isSearching={isLoading ?? false} size={48} />
+          {/* Search button */}
+          <button
+            type="submit"
+            disabled={isLoading || !query.trim()}
+            className="px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white text-sm lg:text-base font-semibold rounded-xl lg:rounded-2xl shadow-lg shadow-amber-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all hover:shadow-xl hover:shadow-amber-300/40 active:scale-[0.98]"
+          >
+            Search
+          </button>
+
+          {/* Boba Mascot - hidden on small screens */}
+          <div className="hidden sm:block">
+            <BobaMascot isSearching={isLoading ?? false} size={48} />
+          </div>
+        </div>
       </form>
 
-      {/* Example queries */}
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="text-xs text-gray-500">Try:</span>
-        {EXAMPLE_QUERIES.map((example) => (
+      {/* Example queries as floating bubbles - horizontal scroll on mobile */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <span className="text-xs lg:text-sm text-stone-400 shrink-0">Try:</span>
+        {EXAMPLE_QUERIES.map((example, index) => (
           <button
             key={example}
             onClick={() => handleExampleClick(example)}
             disabled={isLoading}
-            className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50"
+            className="px-2.5 lg:px-3 py-1 lg:py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs lg:text-sm rounded-full border border-amber-200/60 transition-all disabled:opacity-50 hover:scale-105 hover:shadow-sm whitespace-nowrap shrink-0"
+            style={{
+              animationDelay: `${index * 100}ms`,
+            }}
           >
             {example}
           </button>

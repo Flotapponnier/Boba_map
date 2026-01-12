@@ -66,6 +66,9 @@ export default function Home() {
   const [selectedPosition, setSelectedPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [isSelectingPosition, setIsSelectingPosition] = useState(false);
 
+  // Mobile sidebar state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   // Check auth status on mount
   useEffect(() => {
     fetch("/api/auth/me")
@@ -220,22 +223,37 @@ export default function Home() {
   const allPlaces = lastQuery ? results : postPlaces;
 
   return (
-    <main className="h-screen w-screen flex flex-col overflow-hidden bg-white">
+    <main className="h-screen w-screen flex flex-col overflow-hidden bg-[#FFFCF7] boba-pattern">
       {/* Header with search */}
-      <header className="shrink-0 p-4 border-b border-gray-100">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 max-w-3xl">
-            <h1 className="text-xl font-bold text-gray-900 mb-3">
-              🧋 Boba
-              <span className="text-sm font-normal text-gray-500 ml-2">
-                Stuttgart
-              </span>
-            </h1>
-            <SearchBar onSearch={handleSearch} isLoading={isSearching} />
+      <header className="shrink-0 px-4 py-3 lg:px-6 lg:py-5 bg-gradient-to-b from-amber-50/80 to-transparent">
+        {/* Top row: hamburger, logo, auth */}
+        <div className="flex items-center justify-between gap-3 mb-3 lg:mb-4">
+          {/* Hamburger menu - mobile only */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 -ml-1 rounded-xl hover:bg-amber-100 transition-colors"
+            aria-label="Open menu"
+          >
+            <svg className="w-6 h-6 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          {/* Logo */}
+          <div className="flex items-center gap-2 flex-1 lg:flex-initial">
+            <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200">
+              <span className="text-lg lg:text-xl">🧋</span>
+            </div>
+            <div>
+              <h1 className="text-lg lg:text-xl font-bold text-stone-800 tracking-tight">
+                Boba
+              </h1>
+              <p className="text-xs text-stone-400 -mt-0.5 hidden sm:block">Stuttgart</p>
+            </div>
           </div>
 
           {/* Auth section */}
-          <div className="flex items-center gap-3 pt-1">
+          <div className="flex items-center gap-2 lg:gap-3">
             {user ? (
               <UserMenu
                 user={user}
@@ -245,35 +263,75 @@ export default function Home() {
             ) : (
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium rounded-full shadow-lg shadow-amber-500/30 transition-all flex items-center gap-2"
+                className="px-3 py-2 lg:px-5 lg:py-2.5 bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white text-sm lg:text-base font-semibold rounded-xl lg:rounded-2xl shadow-lg shadow-amber-200/60 transition-all flex items-center gap-1.5 lg:gap-2 hover:shadow-xl hover:shadow-amber-300/50 active:scale-[0.98]"
               >
-                <span>🧋</span>
+                <span className="hidden sm:inline">🧋</span>
                 Sign In
               </button>
             )}
           </div>
         </div>
+
+        {/* Search bar row */}
+        <div className="lg:max-w-3xl">
+          <SearchBar onSearch={handleSearch} isLoading={isSearching} />
+        </div>
       </header>
 
       {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Results sidebar - hide when creating post */}
-        <aside className={`w-96 shrink-0 border-r border-gray-100 overflow-y-auto p-4 transition-all ${showCreatePostModal ? 'hidden' : ''}`}>
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Mobile backdrop overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 z-[998] lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Results sidebar - slide-in on mobile */}
+        <aside
+          className={`
+            fixed inset-y-0 left-0 z-[999] w-[85vw] max-w-[400px]
+            transform transition-transform duration-300 ease-out
+            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+            lg:relative lg:translate-x-0 lg:w-[400px] lg:z-auto
+            bg-white lg:bg-white/60 backdrop-blur-sm border-r border-amber-100/50 overflow-y-auto
+            ${showCreatePostModal ? 'hidden' : ''}
+          `}
+        >
+          {/* Mobile sidebar header */}
+          <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-amber-100/50 p-4 flex items-center justify-between lg:hidden">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🧋</span>
+              <span className="font-bold text-stone-800">Results</span>
+            </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-2 rounded-xl hover:bg-amber-100 transition-colors"
+              aria-label="Close menu"
+            >
+              <svg className="w-5 h-5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="p-4 lg:p-5">
           {/* Create post button */}
           {user && (
             <button
               onClick={handleCreatePost}
-              className="w-full mb-4 py-3 px-4 bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 text-amber-700 font-medium rounded-xl border-2 border-dashed border-amber-300 transition-all flex items-center justify-center gap-2"
+              className="w-full mb-5 py-3.5 px-4 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-amber-600 font-semibold rounded-2xl border-2 border-dashed border-amber-200 hover:border-amber-300 transition-all flex items-center justify-center gap-2 group"
             >
-              <span className="text-xl">📍</span>
+              <span className="text-xl group-hover:scale-110 transition-transform">📍</span>
               Share a Place
             </button>
           )}
 
           {lastQuery ? (
             <>
-              <p className="text-sm text-gray-400 mb-3">
-                Results for: <span className="text-gray-600">"{lastQuery}"</span>
+              <p className="text-sm text-stone-400 mb-4">
+                Results for: <span className="text-stone-600 font-medium">"{lastQuery}"</span>
               </p>
               <ResultsList
                 places={results}
@@ -288,14 +346,14 @@ export default function Home() {
             </>
           ) : (
             <>
-              <p className="text-sm text-gray-400 mb-3">
-                Community posts ({posts.length})
+              <p className="text-sm text-stone-400 mb-4">
+                Community posts <span className="text-amber-500 font-medium">({posts.length})</span>
               </p>
               {posts.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-4xl mb-3">🗺️</div>
-                  <p className="text-gray-500">No posts yet</p>
-                  <p className="text-sm text-gray-400 mt-1">
+                <div className="text-center py-16">
+                  <div className="text-5xl mb-4 animate-bubble">🗺️</div>
+                  <p className="text-stone-600 font-medium">No posts yet</p>
+                  <p className="text-sm text-stone-400 mt-1">
                     Be the first to share a place!
                   </p>
                 </div>
@@ -305,27 +363,27 @@ export default function Home() {
                     <button
                       key={post.id}
                       onClick={() => handlePostClick(post)}
-                      className="w-full text-left p-4 rounded-xl border border-gray-100 hover:border-amber-200 hover:bg-amber-50/50 transition-all"
+                      className="w-full text-left p-4 rounded-2xl bg-white border border-amber-100 hover:border-amber-200 hover:shadow-md hover:shadow-amber-100/50 transition-all group"
                     >
                       <div className="flex items-start gap-3">
                         <img
                           src={post.user?.avatarUrl || "/avatars/golden.png"}
                           alt=""
-                          className="w-10 h-10 rounded-full bg-amber-50"
+                          className="w-11 h-11 rounded-xl bg-amber-50 group-hover:scale-105 transition-transform"
                         />
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-800 truncate">
+                          <h3 className="font-semibold text-stone-700 truncate group-hover:text-amber-600 transition-colors">
                             {post.title}
                           </h3>
-                          <p className="text-sm text-gray-500 truncate">
+                          <p className="text-sm text-stone-500 truncate">
                             {post.description}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-stone-400">
                               by {post.user?.username || "Anonymous"}
                             </span>
                             {post.rating !== null && (
-                              <span className="text-xs text-amber-500">
+                              <span className="text-xs text-amber-500 font-medium">
                                 ★ {post.rating.toFixed(1)}
                               </span>
                             )}
@@ -338,14 +396,15 @@ export default function Home() {
               )}
             </>
           )}
+          </div>
         </aside>
 
         {/* Map */}
         <div className="flex-1 relative">
           {/* Position selection indicator */}
           {isSelectingPosition && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] px-4 py-2 bg-amber-500 text-white rounded-full shadow-lg flex items-center gap-2 animate-pulse">
-              <span>👆</span>
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] px-5 py-3 bg-gradient-to-r from-amber-400 to-orange-400 text-white font-medium rounded-2xl shadow-xl shadow-amber-300/40 flex items-center gap-2 animate-pulse">
+              <span className="text-lg">👆</span>
               Click on the map to select a position
             </div>
           )}
