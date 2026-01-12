@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Place } from "@/types";
-import { DEFAULT_MAP_CONFIG, OSM_TILE_URL, OSM_ATTRIBUTION } from "@/constants";
+import { DEFAULT_MAP_CONFIG, OSM_TILE_URL, OSM_ATTRIBUTION, getAvatarByIndex, getFeedback, getBookingLink } from "@/constants";
 
 // Custom colored marker
 function createColoredIcon(color: string) {
@@ -36,6 +36,15 @@ const CATEGORY_COLORS: Record<string, string> = {
   activity: "#EC4899", // pink
   transport: "#6B7280", // gray
   nightlife: "#EF4444", // red
+};
+
+const BOOKING_LABELS: Record<string, string> = {
+  accommodation: "Book now →",
+  food: "See reviews →",
+  event: "Join event →",
+  service: "Learn more →",
+  activity: "Sign up →",
+  nightlife: "See more →",
 };
 
 interface MapControllerProps {
@@ -155,6 +164,11 @@ export function Map({
     };
   }, [places]);
 
+  // Get the index of a place in the original array
+  const getPlaceIndex = (placeId: string): number => {
+    return places.findIndex((p) => p.id === placeId);
+  };
+
   return (
     <MapContainer
       center={[DEFAULT_MAP_CONFIG.center.lat, DEFAULT_MAP_CONFIG.center.lng]}
@@ -172,36 +186,99 @@ export function Map({
         onSequenceComplete={handleSequenceComplete}
       />
 
-      {visiblePlaces.map((place) => (
-        <Marker
-          key={place.id}
-          position={[place.coordinates.lat, place.coordinates.lng]}
-          icon={createColoredIcon(CATEGORY_COLORS[place.category] || "#3B82F6")}
-          eventHandlers={{
-            click: () => onPlaceSelect?.(place),
-          }}
-        >
-          <Popup>
-            <div className="min-w-[200px]">
-              <h3 className="font-bold text-gray-900">{place.name}</h3>
-              <p className="text-sm text-gray-600 mt-1">{place.description}</p>
-              {place.price !== undefined && (
-                <p className="text-sm font-medium text-green-600 mt-2">
-                  {place.price === 0 ? "Free" : `${place.price}€`}
-                </p>
-              )}
-              {place.rating && (
-                <p className="text-sm text-yellow-600">
-                  ⭐ {place.rating.toFixed(1)}
-                </p>
-              )}
-              {place.address && (
-                <p className="text-xs text-gray-500 mt-1">{place.address}</p>
-              )}
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      {visiblePlaces.map((place) => {
+        const index = getPlaceIndex(place.id);
+        const avatar = getAvatarByIndex(index);
+        const feedback = getFeedback(place.category, place.price, index);
+        const bookingLink = getBookingLink(place.name, place.category);
+
+        return (
+          <Marker
+            key={place.id}
+            position={[place.coordinates.lat, place.coordinates.lng]}
+            icon={createColoredIcon(CATEGORY_COLORS[place.category] || "#3B82F6")}
+            eventHandlers={{
+              click: () => onPlaceSelect?.(place),
+            }}
+          >
+            <Popup maxWidth={320} minWidth={280}>
+              <div className="p-1">
+                {/* Header */}
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h3 className="font-bold text-gray-900 text-base leading-tight">
+                    {place.name}
+                  </h3>
+                  {place.price !== undefined && (
+                    <span
+                      className={`text-lg font-bold shrink-0 ${
+                        place.price === 0
+                          ? "text-green-600"
+                          : place.price < 50
+                            ? "text-blue-600"
+                            : "text-amber-600"
+                      }`}
+                    >
+                      {place.price === 0 ? "Free" : `${place.price}€`}
+                    </span>
+                  )}
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-gray-600 mb-3">{place.description}</p>
+
+                {/* Rating */}
+                {place.rating && (
+                  <div className="flex items-center gap-1 mb-3">
+                    {[...Array(5)].map((_, i) => (
+                      <span
+                        key={i}
+                        className={`text-sm ${
+                          i < Math.round(place.rating!) ? "text-yellow-400" : "text-gray-300"
+                        }`}
+                      >
+                        ★
+                      </span>
+                    ))}
+                    <span className="text-xs text-gray-500 ml-1">
+                      {place.rating.toFixed(1)}
+                    </span>
+                  </div>
+                )}
+
+                {/* Boba feedback */}
+                <div className="flex items-start gap-2 p-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg mb-3">
+                  <img
+                    src={avatar.image}
+                    alt={avatar.name}
+                    className="w-8 h-8 object-contain"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-amber-700">{avatar.name}</p>
+                    <p className="text-xs text-gray-600 leading-tight">{feedback}</p>
+                  </div>
+                </div>
+
+                {/* Address */}
+                {place.address && (
+                  <p className="text-xs text-gray-500 mb-3">📍 {place.address}</p>
+                )}
+
+                {/* Booking link */}
+                {bookingLink && (
+                  <a
+                    href={bookingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full py-2 px-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg text-center transition-colors"
+                  >
+                    {BOOKING_LABELS[place.category] || "Learn more →"}
+                  </a>
+                )}
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
     </MapContainer>
   );
 }

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import type { Place } from "@/types";
+import { getAvatarByIndex, getFeedback, getBookingLink } from "@/constants/boba-feedback";
 
 const CATEGORY_COLORS: Record<string, string> = {
   accommodation: "bg-blue-100 text-blue-700",
@@ -21,6 +23,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   activity: "🎯 Activity",
   transport: "🚌 Transport",
   nightlife: "🌙 Nightlife",
+};
+
+const BOOKING_LABELS: Record<string, string> = {
+  accommodation: "Book now",
+  food: "See reviews",
+  event: "Join event",
+  service: "Learn more",
+  activity: "Sign up",
+  nightlife: "See more",
 };
 
 interface ResultsListProps {
@@ -95,7 +106,7 @@ export function ResultsList({
   const visiblePlaces = places.slice(0, visibleCount);
 
   return (
-    <div ref={containerRef} className="space-y-3">
+    <div ref={containerRef} className="space-y-4">
       <p className="text-sm text-gray-500">
         {visibleCount < places.length ? (
           <span className="flex items-center gap-2">
@@ -110,65 +121,129 @@ export function ResultsList({
       {visiblePlaces.map((place, index) => {
         const isHighlighted = currentHighlightIndex === index;
         const isSelected = selectedPlace?.id === place.id;
+        const avatar = getAvatarByIndex(index);
+        const feedback = getFeedback(place.category, place.price, index);
+        const bookingLink = getBookingLink(place.name, place.category);
 
         return (
           <div
             key={place.id}
-            onClick={() => onPlaceClick(place)}
-            className={`p-4 rounded-lg border cursor-pointer transition-all animate-slide-in ${
+            className={`rounded-xl border overflow-hidden transition-all animate-slide-in ${
               isSelected
                 ? "border-blue-500 bg-blue-50"
                 : isHighlighted
-                  ? "border-blue-400 bg-blue-50/50 ring-2 ring-blue-200"
-                  : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
+                  ? "border-amber-400 bg-amber-50/50 ring-2 ring-amber-200"
+                  : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
             }`}
             style={{
               animationDelay: `${index * 100}ms`,
             }}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${
-                      CATEGORY_COLORS[place.category] ||
-                      "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {CATEGORY_LABELS[place.category] || place.category}
-                  </span>
-                  {place.rating && (
-                    <span className="text-xs text-yellow-600">
-                      ⭐ {place.rating.toFixed(1)}
+            {/* Main content - clickable */}
+            <div
+              onClick={() => onPlaceClick(place)}
+              className="p-4 cursor-pointer"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${
+                        CATEGORY_COLORS[place.category] ||
+                        "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {CATEGORY_LABELS[place.category] || place.category}
                     </span>
+                    {place.rating && (
+                      <span className="text-xs text-yellow-600">
+                        ⭐ {place.rating.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="font-semibold text-gray-900">
+                    {place.name}
+                  </h3>
+
+                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                    {place.description}
+                  </p>
+
+                  {place.address && (
+                    <p className="text-xs text-gray-400 mt-2 truncate">
+                      📍 {place.address}
+                    </p>
                   )}
                 </div>
 
-                <h3 className="font-semibold text-gray-900 truncate">
-                  {place.name}
-                </h3>
-
-                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                  {place.description}
-                </p>
-
-                {place.address && (
-                  <p className="text-xs text-gray-400 mt-2 truncate">
-                    📍 {place.address}
-                  </p>
+                {place.price !== undefined && (
+                  <div className="text-right shrink-0">
+                    <span
+                      className={`text-xl font-bold ${
+                        place.price === 0
+                          ? "text-green-600"
+                          : place.price < 50
+                            ? "text-blue-600"
+                            : "text-amber-600"
+                      }`}
+                    >
+                      {place.price === 0 ? "Free" : `${place.price}€`}
+                    </span>
+                    {place.price > 0 && (
+                      <p className="text-xs text-gray-400">per night</p>
+                    )}
+                  </div>
                 )}
               </div>
+            </div>
 
-              {place.price !== undefined && (
-                <div className="text-right shrink-0">
-                  <span
-                    className={`text-lg font-bold ${
-                      place.price === 0 ? "text-green-600" : "text-gray-900"
-                    }`}
-                  >
-                    {place.price === 0 ? "Free" : `${place.price}€`}
-                  </span>
+            {/* Boba feedback section */}
+            <div className="px-4 pb-4">
+              <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
+                {/* Avatar */}
+                <div className="relative w-10 h-10 shrink-0">
+                  <Image
+                    src={avatar.image}
+                    alt={avatar.name}
+                    fill
+                    className="object-contain drop-shadow-sm"
+                  />
                 </div>
+
+                {/* Feedback */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-amber-700">
+                    {avatar.name}
+                  </p>
+                  <p className="text-sm text-gray-700 mt-0.5">{feedback}</p>
+                </div>
+              </div>
+
+              {/* Booking button */}
+              {bookingLink && (
+                <a
+                  href={bookingLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                  {BOOKING_LABELS[place.category] || "Learn more"}
+                </a>
               )}
             </div>
           </div>
