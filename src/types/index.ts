@@ -26,8 +26,11 @@ export interface Place {
   currency?: string;
   rating?: number;
   address?: string;
-  tags: string[];
+  tags?: string[];
   imageUrl?: string;
+  // For user-created posts
+  isUserPost?: boolean;
+  postData?: unknown;
 }
 
 export interface SearchQuery {
@@ -43,4 +46,5 @@ export interface MapConfig {
   minZoom: number;
   maxZoom: number;
 }
+
 

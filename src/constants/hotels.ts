@@ -144,3 +144,4 @@ export function getExpensiveHotels(): Place[] {
   return STUTTGART_HOTELS.filter((h) => h.price !== undefined && h.price >= 150);
 }
 
+

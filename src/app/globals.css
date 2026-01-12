@@ -165,3 +165,13 @@ body {
   animation: slide-in-right 0.4s ease-out forwards;
   opacity: 0;
 }
+
+/* Slide in from left for create post panel */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
