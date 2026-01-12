@@ -7,27 +7,6 @@ import "leaflet/dist/leaflet.css";
 import type { Place } from "@/types";
 import { DEFAULT_MAP_CONFIG, OSM_TILE_URL, OSM_ATTRIBUTION, getAvatarByIndex, getFeedback, getBookingLink } from "@/constants";
 
-// Custom colored marker
-function createColoredIcon(color: string) {
-  return L.divIcon({
-    className: "custom-marker",
-    html: `
-      <div style="
-        background-color: ${color};
-        width: 24px;
-        height: 24px;
-        border-radius: 50% 50% 50% 0;
-        transform: rotate(-45deg);
-        border: 2px solid white;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      "></div>
-    `,
-    iconSize: [24, 24],
-    iconAnchor: [12, 24],
-    popupAnchor: [0, -24],
-  });
-}
-
 const CATEGORY_COLORS: Record<string, string> = {
   accommodation: "#3B82F6", // blue
   food: "#F97316", // orange
@@ -46,6 +25,123 @@ const BOOKING_LABELS: Record<string, string> = {
   activity: "Sign up →",
   nightlife: "See more →",
 };
+
+// Create custom marker with Boba avatar and feedback bubble
+function createBobaMarker(
+  color: string,
+  avatarUrl: string,
+  feedback: string,
+  price: number | undefined
+) {
+  // Truncate feedback for bubble
+  const shortFeedback = feedback.length > 40 ? feedback.slice(0, 37) + "..." : feedback;
+  const priceText = price !== undefined ? (price === 0 ? "Free" : `${price}€`) : "";
+  
+  return L.divIcon({
+    className: "boba-marker",
+    html: `
+      <div style="position: relative; width: 200px; height: 80px;">
+        <!-- Feedback bubble -->
+        <div style="
+          position: absolute;
+          left: 35px;
+          top: 0;
+          background: white;
+          border-radius: 12px;
+          padding: 6px 10px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          max-width: 160px;
+          font-size: 11px;
+          line-height: 1.3;
+          color: #374151;
+          border: 1px solid #f3f4f6;
+        ">
+          <div style="font-weight: 600; color: ${color}; margin-bottom: 2px;">
+            ${priceText}
+          </div>
+          <div style="color: #6b7280;">
+            ${shortFeedback}
+          </div>
+          <!-- Triangle pointer -->
+          <div style="
+            position: absolute;
+            left: -6px;
+            top: 12px;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-right: 6px solid white;
+          "></div>
+        </div>
+        
+        <!-- Avatar circle -->
+        <div style="
+          position: absolute;
+          left: 0;
+          top: 5px;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: white;
+          border: 2px solid ${color};
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+          <img src="${avatarUrl}" style="width: 28px; height: 28px; object-fit: contain;" />
+        </div>
+        
+        <!-- Pin point -->
+        <div style="
+          position: absolute;
+          left: 12px;
+          top: 38px;
+          width: 8px;
+          height: 8px;
+          background: ${color};
+          border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        "></div>
+        <div style="
+          position: absolute;
+          left: 15px;
+          top: 46px;
+          width: 2px;
+          height: 12px;
+          background: ${color};
+          border-radius: 1px;
+        "></div>
+      </div>
+    `,
+    iconSize: [200, 80],
+    iconAnchor: [16, 58],
+    popupAnchor: [80, -50],
+  });
+}
+
+// Simple marker for when we don't want the bubble
+function createSimpleMarker(color: string) {
+  return L.divIcon({
+    className: "custom-marker",
+    html: `
+      <div style="
+        background-color: ${color};
+        width: 24px;
+        height: 24px;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        border: 2px solid white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      "></div>
+    `,
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24],
+  });
+}
 
 interface MapControllerProps {
   places: Place[];
@@ -109,6 +205,7 @@ export function Map({
   const [visiblePlaces, setVisiblePlaces] = useState<Place[]>([]);
   const [currentFocusIndex, setCurrentFocusIndex] = useState(-1);
   const [isShowingSequence, setIsShowingSequence] = useState(false);
+  const [showBubbles, setShowBubbles] = useState(true);
   const prevPlacesRef = useRef<Place[]>([]);
 
   const handleSequenceComplete = useCallback(() => {
@@ -128,6 +225,7 @@ export function Map({
     prevPlacesRef.current = places;
     setVisiblePlaces([]);
     setCurrentFocusIndex(-1);
+    setShowBubbles(true);
 
     if (places.length === 0) {
       setIsShowingSequence(false);
@@ -191,12 +289,18 @@ export function Map({
         const avatar = getAvatarByIndex(index);
         const feedback = getFeedback(place.category, place.price, index);
         const bookingLink = getBookingLink(place.name, place.category);
+        const color = CATEGORY_COLORS[place.category] || "#3B82F6";
+
+        // Use bubble marker with avatar and feedback
+        const icon = showBubbles
+          ? createBobaMarker(color, avatar.image, feedback, place.price)
+          : createSimpleMarker(color);
 
         return (
           <Marker
             key={place.id}
             position={[place.coordinates.lat, place.coordinates.lng]}
-            icon={createColoredIcon(CATEGORY_COLORS[place.category] || "#3B82F6")}
+            icon={icon}
             eventHandlers={{
               click: () => onPlaceSelect?.(place),
             }}

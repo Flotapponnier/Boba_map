@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import Image from "next/image";
 import type { Place } from "@/types";
 import { getAvatarByIndex, getFeedback, getBookingLink } from "@/constants/boba-feedback";
 
@@ -202,14 +201,11 @@ export function ResultsList({
             <div className="px-4 pb-4">
               <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
                 {/* Avatar */}
-                <div className="relative w-10 h-10 shrink-0">
-                  <Image
-                    src={avatar.image}
-                    alt={avatar.name}
-                    fill
-                    className="object-contain drop-shadow-sm"
-                  />
-                </div>
+                <img
+                  src={avatar.image}
+                  alt={avatar.name}
+                  className="w-10 h-10 object-contain drop-shadow-sm shrink-0"
+                />
 
                 {/* Feedback */}
                 <div className="flex-1 min-w-0">
