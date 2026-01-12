@@ -6,6 +6,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Place } from "@/types";
 import { DEFAULT_MAP_CONFIG, OSM_TILE_URL, OSM_ATTRIBUTION, getAvatarByIndex, getFeedback, getBookingLink } from "@/constants";
+import { useBubbleSound } from "@/hooks";
 
 const CATEGORY_COLORS: Record<string, string> = {
   accommodation: "#3B82F6", // blue
@@ -348,6 +349,7 @@ export function Map({
   const [isShowingSequence, setIsShowingSequence] = useState(false);
   const [showBubbles, setShowBubbles] = useState(true);
   const prevPlacesRef = useRef<Place[]>([]);
+  const { playSound } = useBubbleSound();
 
   const handleSequenceComplete = useCallback(() => {
     setIsShowingSequence(false);
@@ -381,6 +383,7 @@ export function Map({
 
     if (places.length === 0) {
       setIsShowingSequence(false);
+      onSearchAnimationComplete?.();
       return;
     }
 
@@ -388,12 +391,13 @@ export function Map({
 
     const timeouts: NodeJS.Timeout[] = [];
 
-    // Show each place one by one with camera focus
+    // Show each place one by one with camera focus and sound
     places.forEach((place, index) => {
       const timeout = setTimeout(
         () => {
           setVisiblePlaces((prev) => [...prev, place]);
           setCurrentFocusIndex(index);
+          playSound(); // Play bubble pop sound! 🧋
         },
         index * 1000 + 500
       ); // 1 second per place, 500ms initial delay
@@ -412,7 +416,7 @@ export function Map({
     return () => {
       timeouts.forEach(clearTimeout);
     };
-  }, [places]);
+  }, [places, onSearchAnimationComplete, playSound]);
 
   // Get the index of a place in the original array
   const getPlaceIndex = (placeId: string): number => {
