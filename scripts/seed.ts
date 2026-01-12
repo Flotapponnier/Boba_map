@@ -1,76 +1,80 @@
-import { Database } from "bun:sqlite";
-import path from "path";
+import { createClient } from "@libsql/client";
 import fs from "fs";
+import path from "path";
 
-const dbPath = path.join(process.cwd(), "boba.db");
-const dataPath = path.join(process.cwd(), "scripts/data/places.json");
-
-console.log("🧋 Seeding database...\n");
-
-// Read places data
-const placesData = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
-console.log(`📁 Loaded ${placesData.length} places from places.json`);
-
-// Connect to database
-const db = new Database(dbPath);
-db.exec("PRAGMA journal_mode = WAL");
-
-// Ensure places table exists
-db.exec(`
-  CREATE TABLE IF NOT EXISTS places (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT,
-    category TEXT NOT NULL,
-    lat REAL NOT NULL,
-    lng REAL NOT NULL,
-    price REAL,
-    rating REAL,
-    address TEXT,
-    tags TEXT
-  )
-`);
-
-// Clear existing places
-db.exec("DELETE FROM places");
-console.log("🗑️  Cleared existing places");
-
-// Insert places
-const insert = db.prepare(`
-  INSERT INTO places (name, description, category, lat, lng, price, rating, address, tags)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-`);
-
-let count = 0;
-for (const place of placesData) {
-  insert.run(
-    place.name,
-    place.description,
-    place.category,
-    place.lat,
-    place.lng,
-    place.price,
-    place.rating,
-    place.address,
-    JSON.stringify(place.tags)
-  );
-  count++;
+// Load env from .env.local if running locally
+const envPath = path.join(process.cwd(), ".env.local");
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, "utf-8");
+  for (const line of envContent.split("\n")) {
+    const [key, ...valueParts] = line.split("=");
+    if (key && valueParts.length > 0) {
+      process.env[key.trim()] = valueParts.join("=").trim();
+    }
+  }
 }
 
-console.log(`✅ Inserted ${count} places\n`);
+const url = process.env.TURSO_DATABASE_URL;
+const authToken = process.env.TURSO_AUTH_TOKEN;
 
-// Show summary by category
-const summary = db.query(`
-  SELECT category, COUNT(*) as count
-  FROM places
-  GROUP BY category
-  ORDER BY count DESC
-`).all();
-
-console.log("📊 Summary:");
-for (const row of summary as { category: string; count: number }[]) {
-  console.log(`   ${row.category}: ${row.count}`);
+if (!url) {
+  console.error("❌ TURSO_DATABASE_URL not set");
+  process.exit(1);
 }
 
-db.close();
-console.log("\n🎉 Done!");
+console.log("🧋 Seeding Turso database...\n");
+
+const client = createClient({ url, authToken });
+
+async function seed() {
+  // Read places data
+  const dataPath = path.join(process.cwd(), "scripts/data/places.json");
+  const placesData = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
+  console.log(`📁 Loaded ${placesData.length} places from places.json`);
+
+  // Clear existing places
+  await client.execute("DELETE FROM places");
+  console.log("🗑️  Cleared existing places");
+
+  // Insert places one by one (avoids batch migration tracking)
+  let count = 0;
+  for (const place of placesData) {
+    await client.execute({
+      sql: `INSERT INTO places (name, description, category, lat, lng, price, rating, address, tags)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        place.name,
+        place.description,
+        place.category,
+        place.lat,
+        place.lng,
+        place.price ?? null,
+        place.rating ?? null,
+        place.address ?? null,
+        JSON.stringify(place.tags),
+      ],
+    });
+    count++;
+  }
+  console.log(`✅ Inserted ${count} places\n`);
+
+  // Show summary
+  const result = await client.execute(`
+    SELECT category, COUNT(*) as count
+    FROM places
+    GROUP BY category
+    ORDER BY count DESC
+  `);
+
+  console.log("📊 Summary:");
+  for (const row of result.rows) {
+    console.log(`   ${row.category}: ${row.count}`);
+  }
+
+  console.log("\n🎉 Done!");
+}
+
+seed().catch((err) => {
+  console.error("❌ Seed failed:", err);
+  process.exit(1);
+});

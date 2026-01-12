@@ -1,91 +1,13 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
 import * as schema from "./schema";
-import path from "path";
 
-// Database file in project root
-const dbPath = path.join(process.cwd(), "boba.db");
+// During build time, env vars may not be set. Use placeholder to avoid build errors.
+const url = process.env.TURSO_DATABASE_URL || "file:local.db";
+const authToken = process.env.TURSO_AUTH_TOKEN;
 
-// Create database connection
-const sqlite = new Database(dbPath);
+const client = createClient({ url, authToken });
 
-// Enable WAL mode for better performance
-sqlite.pragma("journal_mode = WAL");
-
-// Create Drizzle instance
-export const db = drizzle(sqlite, { schema });
-
-// Initialize tables
-const initSQL = `
-CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username TEXT NOT NULL UNIQUE,
-  email TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
-  avatar_url TEXT,
-  created_at INTEGER DEFAULT (unixepoch())
-);
-
-CREATE TABLE IF NOT EXISTS posts (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id),
-  title TEXT NOT NULL,
-  description TEXT NOT NULL,
-  category TEXT NOT NULL,
-  lat REAL NOT NULL,
-  lng REAL NOT NULL,
-  address TEXT,
-  price REAL,
-  image_url TEXT,
-  created_at INTEGER DEFAULT (unixepoch()),
-  updated_at INTEGER DEFAULT (unixepoch())
-);
-
-CREATE TABLE IF NOT EXISTS feedbacks (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  post_id INTEGER NOT NULL REFERENCES posts(id),
-  user_id INTEGER NOT NULL REFERENCES users(id),
-  rating INTEGER NOT NULL,
-  comment TEXT,
-  created_at INTEGER DEFAULT (unixepoch())
-);
-
-CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id);
-CREATE INDEX IF NOT EXISTS idx_posts_category ON posts(category);
-CREATE INDEX IF NOT EXISTS idx_feedbacks_post ON feedbacks(post_id);
-
-CREATE TABLE IF NOT EXISTS place_reviews (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  place_key TEXT NOT NULL,
-  place_name TEXT NOT NULL,
-  place_category TEXT,
-  user_id INTEGER NOT NULL REFERENCES users(id),
-  rating INTEGER NOT NULL,
-  comment TEXT,
-  created_at INTEGER DEFAULT (unixepoch())
-);
-
-CREATE INDEX IF NOT EXISTS idx_place_reviews_key ON place_reviews(place_key);
-CREATE INDEX IF NOT EXISTS idx_place_reviews_user ON place_reviews(user_id);
-
-CREATE TABLE IF NOT EXISTS places (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  description TEXT,
-  category TEXT NOT NULL,
-  lat REAL NOT NULL,
-  lng REAL NOT NULL,
-  price REAL,
-  rating REAL,
-  address TEXT,
-  tags TEXT
-);
-
-CREATE INDEX IF NOT EXISTS idx_places_category ON places(category);
-`;
-
-// Run init
-sqlite.exec(initSQL);
+export const db = drizzle(client, { schema });
 
 export { schema };
-
