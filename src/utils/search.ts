@@ -1,4 +1,5 @@
 import type { Place, PlaceCategory } from "@/types";
+import { getCheapHotels, getExpensiveHotels } from "@/constants/hotels";
 
 /**
  * Keywords mapping for query matching
@@ -12,6 +13,37 @@ const CATEGORY_KEYWORDS: Record<PlaceCategory, string[]> = {
   transport: ["bus", "train", "metro", "bike", "car", "taxi", "uber"],
   nightlife: ["bar", "club", "drink", "cocktail", "beer", "wine", "party", "night"],
 };
+
+/**
+ * Keywords for cheap/expensive detection
+ */
+const CHEAP_KEYWORDS = ["cheap", "budget", "affordable", "low cost", "inexpensive", "pas cher", "economique"];
+const EXPENSIVE_KEYWORDS = ["expensive", "luxury", "premium", "high end", "fancy", "luxe", "cher", "5 star", "5-star"];
+
+/**
+ * Detect if query is asking for cheap options
+ */
+function isAskingForCheap(query: string): boolean {
+  const lowerQuery = query.toLowerCase();
+  return CHEAP_KEYWORDS.some((keyword) => lowerQuery.includes(keyword));
+}
+
+/**
+ * Detect if query is asking for expensive options
+ */
+function isAskingForExpensive(query: string): boolean {
+  const lowerQuery = query.toLowerCase();
+  return EXPENSIVE_KEYWORDS.some((keyword) => lowerQuery.includes(keyword));
+}
+
+/**
+ * Detect if query is about hotels
+ */
+function isAskingForHotel(query: string): boolean {
+  const lowerQuery = query.toLowerCase();
+  const hotelKeywords = ["hotel", "hostel", "stay", "sleep", "room", "accommodation", "lodge", "night"];
+  return hotelKeywords.some((keyword) => lowerQuery.includes(keyword));
+}
 
 /**
  * Extract price limit from query (e.g., "less than 10 euros" -> 10)
@@ -81,11 +113,25 @@ function calculateRelevance(place: Place, query: string): number {
 
 /**
  * Search places based on natural language query
+ * Handles special cases for cheap/expensive hotels
  */
 export function searchPlaces(places: Place[], query: string): Place[] {
   if (!query.trim()) return [];
 
   const lowerQuery = query.toLowerCase();
+
+  // Special handling for hotel queries with cheap/expensive
+  if (isAskingForHotel(lowerQuery)) {
+    if (isAskingForCheap(lowerQuery)) {
+      // Return 5 cheap hotels
+      return getCheapHotels().slice(0, 5);
+    }
+    if (isAskingForExpensive(lowerQuery)) {
+      // Return 5 expensive hotels
+      return getExpensiveHotels().slice(0, 5);
+    }
+  }
+
   const priceLimit = extractPriceLimit(query);
   const category = detectCategory(query);
 
@@ -131,4 +177,3 @@ export function searchPlaces(places: Place[], query: string): Place[] {
 
   return results;
 }
-

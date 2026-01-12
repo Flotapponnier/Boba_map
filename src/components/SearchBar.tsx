@@ -9,12 +9,12 @@ interface SearchBarProps {
 }
 
 const EXAMPLE_QUERIES = [
-  "a hostel for less than 30 euros",
+  "i want a cheap hotel",
+  "i want an expensive hotel",
   "where to eat a good kebab",
   "bitcoin event",
   "i want to learn music",
   "best bar in town",
-  "free wifi to work",
 ];
 
 export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
