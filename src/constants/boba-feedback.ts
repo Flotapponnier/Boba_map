@@ -134,7 +134,9 @@ export function getRandomAvatar(): BobaAvatar {
  * Get avatar by index (for consistent assignment)
  */
 export function getAvatarByIndex(index: number): BobaAvatar {
-  return BOBA_AVATARS[index % BOBA_AVATARS.length];
+  // Handle negative indices (e.g., when findIndex returns -1)
+  const safeIndex = Math.abs(index) % BOBA_AVATARS.length;
+  return BOBA_AVATARS[safeIndex];
 }
 
 /**
@@ -164,7 +166,9 @@ export function getFeedback(
     feedbackArray = templates.expensive;
   }
 
-  return feedbackArray[index % feedbackArray.length];
+  // Handle negative indices
+  const safeIndex = Math.abs(index) % feedbackArray.length;
+  return feedbackArray[safeIndex];
 }
 
 /**
