@@ -16,11 +16,11 @@ export const DEFAULT_MAP_CONFIG: MapConfig = {
 };
 
 /**
- * OpenStreetMap tile layer URL (100% free)
+ * CARTO Positron tile layer - light minimalist style (free, no API key)
  */
-export const OSM_TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+export const OSM_TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
 export const OSM_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 
