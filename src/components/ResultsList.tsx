@@ -38,6 +38,7 @@ interface ResultsListProps {
   selectedPlace?: Place;
   onPlaceClick: (place: Place) => void;
   currentHighlightIndex?: number;
+  onReviewClick?: (place: Place) => void;
 }
 
 export function ResultsList({
@@ -45,6 +46,7 @@ export function ResultsList({
   selectedPlace,
   onPlaceClick,
   currentHighlightIndex,
+  onReviewClick,
 }: ResultsListProps) {
   const [visibleCount, setVisibleCount] = useState(0);
   const prevPlacesRef = useRef<string>("");
@@ -216,31 +218,47 @@ export function ResultsList({
                 </div>
               </div>
 
-              {/* Booking button */}
-              {bookingLink && (
-                <a
-                  href={bookingLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              {/* Action buttons */}
+              <div className="mt-3 flex gap-2">
+                {/* Review button */}
+                {onReviewClick && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onReviewClick(place);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 text-amber-700 text-sm font-medium rounded-lg transition-colors border border-amber-200"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                  {BOOKING_LABELS[place.category] || "Learn more"}
-                </a>
-              )}
+                    ⭐ Leave Review
+                  </button>
+                )}
+                
+                {/* Booking button */}
+                {bookingLink && (
+                  <a
+                    href={bookingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className={`flex items-center justify-center gap-2 py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors ${onReviewClick ? 'flex-1' : 'w-full'}`}
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                    {BOOKING_LABELS[place.category] || "Learn more"}
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         );

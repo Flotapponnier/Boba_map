@@ -42,6 +42,21 @@ export const feedbacks = sqliteTable("feedbacks", {
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+/**
+ * Place Reviews table - reviews for ANY place (API places, search results, etc.)
+ * Uses normalized place name as key to match across sources
+ */
+export const placeReviews = sqliteTable("place_reviews", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  placeKey: text("place_key").notNull(), // normalized name (lowercase, trimmed)
+  placeName: text("place_name").notNull(), // original display name
+  placeCategory: text("place_category"), // category if known
+  userId: integer("user_id").notNull().references(() => users.id),
+  rating: integer("rating").notNull(), // 1-5 stars
+  comment: text("comment"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -49,4 +64,6 @@ export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 export type Feedback = typeof feedbacks.$inferSelect;
 export type NewFeedback = typeof feedbacks.$inferInsert;
+export type PlaceReview = typeof placeReviews.$inferSelect;
+export type NewPlaceReview = typeof placeReviews.$inferInsert;
 

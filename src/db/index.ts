@@ -53,6 +53,20 @@ CREATE TABLE IF NOT EXISTS feedbacks (
 CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id);
 CREATE INDEX IF NOT EXISTS idx_posts_category ON posts(category);
 CREATE INDEX IF NOT EXISTS idx_feedbacks_post ON feedbacks(post_id);
+
+CREATE TABLE IF NOT EXISTS place_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  place_key TEXT NOT NULL,
+  place_name TEXT NOT NULL,
+  place_category TEXT,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  rating INTEGER NOT NULL,
+  comment TEXT,
+  created_at INTEGER DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_place_reviews_key ON place_reviews(place_key);
+CREATE INDEX IF NOT EXISTS idx_place_reviews_user ON place_reviews(user_id);
 `;
 
 // Run init

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-import { SearchBar, ResultsList, AuthModal, CreatePostModal, UserMenu, FeedbackModal } from "@/components";
+import { SearchBar, ResultsList, AuthModal, CreatePostModal, UserMenu, FeedbackModal, PlaceReviewModal } from "@/components";
 import { STUTTGART_PLACES } from "@/constants";
 import { searchPlaces } from "@/utils";
 import type { Place } from "@/types";
@@ -56,6 +56,10 @@ export default function Home() {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostWithUser | null>(null);
+  
+  // Place review state (for API places / search results)
+  const [showPlaceReviewModal, setShowPlaceReviewModal] = useState(false);
+  const [selectedPlaceForReview, setSelectedPlaceForReview] = useState<Place | null>(null);
 
   // Posts state
   const [posts, setPosts] = useState<PostWithUser[]>([]);
@@ -137,10 +141,25 @@ export default function Home() {
 
     // Small delay to allow mascot animation to start
     searchTimeoutRef.current = setTimeout(() => {
-      const searchResults = searchPlaces(STUTTGART_PLACES, query);
+      // Convert user posts to Place format for search
+      const userPostPlaces: Place[] = posts.map((post) => ({
+        id: `post-${post.id}`,
+        name: post.title,
+        description: post.description,
+        category: post.category as Place["category"],
+        coordinates: { lat: post.lat, lng: post.lng },
+        address: post.address || undefined,
+        price: post.price || undefined,
+        rating: post.rating || undefined,
+        isUserPost: true,
+        postData: post,
+      }));
+      
+      // Search both static places and user posts
+      const searchResults = searchPlaces(STUTTGART_PLACES, query, userPostPlaces);
       setResults(searchResults);
     }, 100);
-  }, []);
+  }, [posts]);
 
   const handleSearchAnimationComplete = useCallback(() => {
     setIsSearching(false);
@@ -148,6 +167,11 @@ export default function Home() {
 
   const handlePlaceSelect = useCallback((place: Place) => {
     setSelectedPlace(place);
+    // Open review modal for non-user-post places
+    if (!place.isUserPost) {
+      setSelectedPlaceForReview(place);
+      setShowPlaceReviewModal(true);
+    }
   }, []);
 
   const handleMapClick = useCallback((lat: number, lng: number) => {
@@ -256,6 +280,10 @@ export default function Home() {
                 selectedPlace={selectedPlace}
                 onPlaceClick={handlePlaceSelect}
                 currentHighlightIndex={isSearching ? currentHighlightIndex : undefined}
+                onReviewClick={(place) => {
+                  setSelectedPlaceForReview(place);
+                  setShowPlaceReviewModal(true);
+                }}
               />
             </>
           ) : (
@@ -382,6 +410,20 @@ export default function Home() {
                 }
               });
           }
+        }}
+      />
+
+      <PlaceReviewModal
+        isOpen={showPlaceReviewModal}
+        onClose={() => {
+          setShowPlaceReviewModal(false);
+          setSelectedPlaceForReview(null);
+        }}
+        place={selectedPlaceForReview}
+        isLoggedIn={!!user}
+        onLoginRequired={() => {
+          setShowPlaceReviewModal(false);
+          setShowAuthModal(true);
         }}
       />
     </main>
