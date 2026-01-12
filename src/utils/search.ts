@@ -1,5 +1,4 @@
 import type { Place, PlaceCategory } from "@/types";
-import { getCheapHotels, getExpensiveHotels } from "@/constants/hotels";
 
 /**
  * Keywords mapping for query matching
@@ -123,13 +122,20 @@ export function searchPlaces(places: Place[], query: string, userPosts: Place[] 
 
   // Special handling for hotel queries with cheap/expensive
   if (isAskingForHotel(lowerQuery)) {
+    const accommodations = places.filter((p) => p.category === "accommodation");
     if (isAskingForCheap(lowerQuery)) {
-      // Return 5 cheap hotels
-      return getCheapHotels().slice(0, 5);
+      // Return cheap hotels (< 50€)
+      return accommodations
+        .filter((p) => p.price !== undefined && p.price < 50)
+        .sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
+        .slice(0, 5);
     }
     if (isAskingForExpensive(lowerQuery)) {
-      // Return 5 expensive hotels
-      return getExpensiveHotels().slice(0, 5);
+      // Return expensive hotels (>= 150€)
+      return accommodations
+        .filter((p) => p.price !== undefined && p.price >= 150)
+        .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
+        .slice(0, 5);
     }
   }
 

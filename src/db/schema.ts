@@ -67,3 +67,22 @@ export type NewFeedback = typeof feedbacks.$inferInsert;
 export type PlaceReview = typeof placeReviews.$inferSelect;
 export type NewPlaceReview = typeof placeReviews.$inferInsert;
 
+/**
+ * Places table - all places data (from JSON seed)
+ */
+export const places = sqliteTable("places", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category").notNull(),
+  lat: real("lat").notNull(),
+  lng: real("lng").notNull(),
+  price: real("price"),
+  rating: real("rating"),
+  address: text("address"),
+  tags: text("tags"), // JSON array as string
+});
+
+export type Place = typeof places.$inferSelect;
+export type NewPlace = typeof places.$inferInsert;
+

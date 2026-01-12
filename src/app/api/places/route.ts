@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { STUTTGART_PLACES } from "@/constants/places";
+import { db } from "@/db";
+import { places } from "@/db/schema";
+import { eq, lte, and } from "drizzle-orm";
 import type { PlaceCategory } from "@/types";
 
 /**
  * GET /api/places
- * Returns static places data for frontend consumption
+ * Returns places from database
  *
  * Query params (all optional):
  * - category: Filter by category (e.g., "food", "accommodation")
  * - maxPrice: Maximum price filter
  * - limit: Limit number of results
- *
- * This endpoint serves static data from constants.
- * Backend can later swap this for database queries without frontend changes.
  */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -21,10 +20,9 @@ export async function GET(request: NextRequest) {
   const maxPrice = searchParams.get("maxPrice");
   const limit = searchParams.get("limit");
 
-  // Start with all places
-  let places = [...STUTTGART_PLACES];
+  // Build query conditions
+  const conditions = [];
 
-  // Filter by category if provided
   if (category) {
     const validCategories: PlaceCategory[] = [
       "accommodation",
@@ -45,10 +43,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    places = places.filter((p) => p.category === category);
+    conditions.push(eq(places.category, category));
   }
 
-  // Filter by max price if provided
   if (maxPrice) {
     const maxPriceNum = parseInt(maxPrice, 10);
     if (isNaN(maxPriceNum) || maxPriceNum < 0) {
@@ -57,12 +54,16 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-    places = places.filter(
-      (p) => p.price === undefined || p.price <= maxPriceNum
-    );
+    conditions.push(lte(places.price, maxPriceNum));
   }
 
-  // Apply limit if provided
+  // Query database
+  let query = db.select().from(places);
+
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions)) as typeof query;
+  }
+
   if (limit) {
     const limitNum = parseInt(limit, 10);
     if (isNaN(limitNum) || limitNum < 1) {
@@ -71,11 +72,26 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-    places = places.slice(0, limitNum);
+    query = query.limit(limitNum) as typeof query;
   }
 
+  const results = await query;
+
+  // Transform to match Place interface
+  const placesData = results.map((row) => ({
+    id: `place-${row.id}`,
+    name: row.name,
+    description: row.description || "",
+    category: row.category as PlaceCategory,
+    coordinates: { lat: row.lat, lng: row.lng },
+    price: row.price ?? undefined,
+    rating: row.rating ?? undefined,
+    address: row.address ?? undefined,
+    tags: row.tags ? JSON.parse(row.tags) : undefined,
+  }));
+
   return NextResponse.json({
-    count: places.length,
-    places,
+    count: placesData.length,
+    places: placesData,
   });
 }

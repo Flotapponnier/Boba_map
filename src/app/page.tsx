@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { SearchBar, ResultsList, AuthModal, CreatePostModal, UserMenu, FeedbackModal, PlaceReviewModal } from "@/components";
-import { STUTTGART_PLACES } from "@/constants";
 import { searchPlaces } from "@/utils";
 import type { Place } from "@/types";
 
@@ -66,6 +65,9 @@ export default function Home() {
   const [selectedPosition, setSelectedPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [isSelectingPosition, setIsSelectingPosition] = useState(false);
 
+  // Places state (from database)
+  const [places, setPlaces] = useState<Place[]>([]);
+
   // Mobile sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -94,9 +96,23 @@ export default function Home() {
     }
   }, []);
 
+  // Load places from database
+  const loadPlaces = useCallback(async () => {
+    try {
+      const res = await fetch("/api/places");
+      const data = await res.json();
+      if (data.places) {
+        setPlaces(data.places);
+      }
+    } catch (err) {
+      console.error("Failed to load places:", err);
+    }
+  }, []);
+
   useEffect(() => {
     loadPosts();
-  }, [loadPosts]);
+    loadPlaces();
+  }, [loadPosts, loadPlaces]);
 
   // Track which result is being shown in the sequence
   useEffect(() => {
@@ -159,10 +175,10 @@ export default function Home() {
       }));
       
       // Search both static places and user posts
-      const searchResults = searchPlaces(STUTTGART_PLACES, query, userPostPlaces);
+      const searchResults = searchPlaces(places, query, userPostPlaces);
       setResults(searchResults);
     }, 100);
-  }, [posts]);
+  }, [places, posts]);
 
   const handleSearchAnimationComplete = useCallback(() => {
     setIsSearching(false);

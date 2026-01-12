@@ -67,6 +67,21 @@ CREATE TABLE IF NOT EXISTS place_reviews (
 
 CREATE INDEX IF NOT EXISTS idx_place_reviews_key ON place_reviews(place_key);
 CREATE INDEX IF NOT EXISTS idx_place_reviews_user ON place_reviews(user_id);
+
+CREATE TABLE IF NOT EXISTS places (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  category TEXT NOT NULL,
+  lat REAL NOT NULL,
+  lng REAL NOT NULL,
+  price REAL,
+  rating REAL,
+  address TEXT,
+  tags TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_places_category ON places(category);
 `;
 
 // Run init

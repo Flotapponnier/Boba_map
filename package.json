@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:seed": "bun run scripts/seed.ts",
+    "db:reset": "rm -f boba.db boba.db-shm boba.db-wal && bun run scripts/seed.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
