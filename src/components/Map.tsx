@@ -457,17 +457,6 @@ export function Map({
 
   // Animate places appearing one by one with camera movement
   useEffect(() => {
-    // Check if these are user posts (no animation needed)
-    const hasUserPosts = places.some((p) => p.isUserPost);
-    
-    if (hasUserPosts) {
-      // For user posts, show them all immediately without animation
-      setVisiblePlaces(places);
-      setIsShowingSequence(false);
-      prevPlacesRef.current = places;
-      return;
-    }
-
     // Only trigger animation when places actually change
     const placesChanged =
       JSON.stringify(places.map((p) => p.id)) !==
@@ -490,7 +479,7 @@ export function Map({
 
     const timeouts: NodeJS.Timeout[] = [];
 
-    // Show each place one by one with camera focus and sound
+    // Show each place one by one with camera focus and sound (including user posts!)
     places.forEach((place, index) => {
       const timeout = setTimeout(
         () => {
