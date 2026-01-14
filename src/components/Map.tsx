@@ -380,46 +380,6 @@ function MapClickHandler({ onMapClick, isSelectingPosition }: MapClickHandlerPro
   return null;
 }
 
-// Map Legend Component
-function MapLegend({ visibleCategories }: { visibleCategories: string[] }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  if (visibleCategories.length === 0) return null;
-
-  return (
-    <div className="absolute bottom-6 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-3 py-2 flex items-center justify-between gap-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-      >
-        <span>🗺️ Legend</span>
-        <svg
-          className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      {isExpanded && (
-        <div className="px-3 pb-3 space-y-1.5 border-t border-gray-100 pt-2">
-          {visibleCategories.map((category) => (
-            <div key={category} className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full shadow-sm"
-                style={{ backgroundColor: CATEGORY_COLORS[category] || "#6B7280" }}
-              />
-              <span className="text-xs text-gray-600">
-                {CATEGORY_LABELS[category] || category}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 interface MapProps {
   places: Place[];
@@ -517,6 +477,7 @@ export function Map({
 
   // Get unique categories from visible places
   const visibleCategories = [...new Set(visiblePlaces.map((p) => p.category))];
+  const [legendExpanded, setLegendExpanded] = useState(false);
 
   return (
     <div className="relative h-full w-full">
@@ -716,8 +677,40 @@ export function Map({
       })}
       </MapContainer>
       
-      {/* Legend overlay */}
-      <MapLegend visibleCategories={visibleCategories} />
+      {/* Legend overlay - rendered outside MapContainer */}
+      {visibleCategories.length > 0 && (
+        <div className="absolute bottom-6 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+          <button
+            onClick={() => setLegendExpanded(!legendExpanded)}
+            className="w-full px-3 py-2 flex items-center justify-between gap-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <span>🗺️ Legend</span>
+            <svg
+              className={`w-4 h-4 transition-transform ${legendExpanded ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {legendExpanded && (
+            <div className="px-3 pb-3 space-y-1.5 border-t border-gray-100 pt-2">
+              {visibleCategories.map((category) => (
+                <div key={category} className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full shadow-sm"
+                    style={{ backgroundColor: CATEGORY_COLORS[category] || "#6B7280" }}
+                  />
+                  <span className="text-xs text-gray-600">
+                    {CATEGORY_LABELS[category] || category}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
