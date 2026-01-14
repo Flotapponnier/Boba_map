@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-import { SearchBar, ResultsList, AuthModal, CreatePostModal, UserMenu, FeedbackModal, PlaceReviewModal } from "@/components";
+import { SearchBar, ResultsList, AuthModal, CreatePostModal, UserMenu, FeedbackModal, PlaceReviewModal, CommunityModal } from "@/components";
 import { searchPlaces } from "@/utils";
 import type { Place } from "@/types";
 
@@ -59,6 +59,9 @@ export default function Home() {
   // Place review state (for API places / search results)
   const [showPlaceReviewModal, setShowPlaceReviewModal] = useState(false);
   const [selectedPlaceForReview, setSelectedPlaceForReview] = useState<Place | null>(null);
+
+  // Community state
+  const [showCommunityModal, setShowCommunityModal] = useState(false);
 
   // Posts state
   const [posts, setPosts] = useState<PostWithUser[]>([]);
@@ -268,8 +271,17 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Auth section */}
+          {/* Communities & Auth section */}
           <div className="flex items-center gap-2 lg:gap-3">
+            {/* Communities button */}
+            <button
+              onClick={() => setShowCommunityModal(true)}
+              className="px-3 py-2 lg:px-4 lg:py-2.5 bg-gradient-to-r from-purple-400 to-indigo-400 hover:from-purple-500 hover:to-indigo-500 text-white text-sm lg:text-base font-semibold rounded-xl lg:rounded-2xl shadow-lg shadow-purple-200/60 transition-all flex items-center gap-1.5 hover:shadow-xl hover:shadow-purple-300/50 active:scale-[0.98]"
+            >
+              <span>👥</span>
+              <span className="hidden sm:inline">Communities</span>
+            </button>
+
             {user ? (
               <UserMenu
                 user={user}
@@ -500,6 +512,12 @@ export default function Home() {
           setShowPlaceReviewModal(false);
           setShowAuthModal(true);
         }}
+      />
+
+      <CommunityModal
+        isOpen={showCommunityModal}
+        onClose={() => setShowCommunityModal(false)}
+        user={user}
       />
     </main>
   );

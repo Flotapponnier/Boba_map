@@ -65,3 +65,41 @@ CREATE TABLE IF NOT EXISTS places (
 );
 
 CREATE INDEX IF NOT EXISTS idx_places_category ON places(category);
+
+-- Communities table
+CREATE TABLE IF NOT EXISTS communities (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  image_url TEXT,
+  is_public INTEGER NOT NULL DEFAULT 1,
+  creator_id INTEGER NOT NULL REFERENCES users(id),
+  created_at INTEGER DEFAULT (unixepoch())
+);
+
+-- Community members table
+CREATE TABLE IF NOT EXISTS community_members (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  community_id INTEGER NOT NULL REFERENCES communities(id),
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  role TEXT NOT NULL DEFAULT 'member',
+  joined_at INTEGER DEFAULT (unixepoch())
+);
+
+-- Join requests table (for private communities)
+CREATE TABLE IF NOT EXISTS join_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  community_id INTEGER NOT NULL REFERENCES communities(id),
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  status TEXT NOT NULL DEFAULT 'pending',
+  message TEXT,
+  created_at INTEGER DEFAULT (unixepoch()),
+  responded_at INTEGER,
+  responded_by INTEGER REFERENCES users(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_communities_creator ON communities(creator_id);
+CREATE INDEX IF NOT EXISTS idx_community_members_community ON community_members(community_id);
+CREATE INDEX IF NOT EXISTS idx_community_members_user ON community_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_join_requests_community ON join_requests(community_id);
+CREATE INDEX IF NOT EXISTS idx_join_requests_status ON join_requests(status);

@@ -86,3 +86,48 @@ export const places = sqliteTable("places", {
 export type Place = typeof places.$inferSelect;
 export type NewPlace = typeof places.$inferInsert;
 
+/**
+ * Communities table - groups users can create and join
+ */
+export const communities = sqliteTable("communities", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  isPublic: integer("is_public", { mode: "boolean" }).notNull().default(true),
+  creatorId: integer("creator_id").notNull().references(() => users.id),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+/**
+ * Community Members table - tracks who belongs to which community
+ */
+export const communityMembers = sqliteTable("community_members", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  communityId: integer("community_id").notNull().references(() => communities.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  role: text("role").notNull().default("member"), // "admin" or "member"
+  joinedAt: integer("joined_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+/**
+ * Join Requests table - pending requests to join private communities
+ */
+export const joinRequests = sqliteTable("join_requests", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  communityId: integer("community_id").notNull().references(() => communities.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  status: text("status").notNull().default("pending"), // "pending", "accepted", "rejected"
+  message: text("message"), // optional message from requester
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  respondedAt: integer("responded_at", { mode: "timestamp" }),
+  respondedBy: integer("responded_by").references(() => users.id),
+});
+
+export type Community = typeof communities.$inferSelect;
+export type NewCommunity = typeof communities.$inferInsert;
+export type CommunityMember = typeof communityMembers.$inferSelect;
+export type NewCommunityMember = typeof communityMembers.$inferInsert;
+export type JoinRequest = typeof joinRequests.$inferSelect;
+export type NewJoinRequest = typeof joinRequests.$inferInsert;
+

@@ -9,5 +9,6 @@ export { FeedbackModal } from "./FeedbackModal";
 export { PlaceReviewModal } from "./PlaceReviewModal";
 export { PWAInstallPrompt } from "./PWAInstallPrompt";
 export { ServiceWorkerRegistration } from "./ServiceWorkerRegistration";
+export { CommunityModal } from "./CommunityModal";
 
 // Map is exported separately due to dynamic import requirement
