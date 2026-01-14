@@ -225,40 +225,48 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <>
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
+        className={`fixed inset-0 z-[9998] bg-stone-900/30 backdrop-blur-sm transition-opacity duration-300 ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
         onClick={onClose}
       />
 
-      {/* Modal */}
-      <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+      {/* Side Panel */}
+      <div
+        className={`fixed top-0 right-0 z-[9999] h-full w-full max-w-md bg-gradient-to-b from-purple-50 to-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
         {/* Header */}
-        <div className="relative h-20 bg-gradient-to-br from-purple-100 via-indigo-50 to-purple-50 flex items-center justify-center">
-          <div className="absolute top-4 left-8 w-4 h-4 rounded-full bg-purple-200/60" />
-          <div className="absolute top-8 right-12 w-6 h-6 rounded-full bg-indigo-200/40" />
-          <h2 className="text-xl font-bold text-purple-800 flex items-center gap-2">
-            <span className="text-2xl">👥</span> Communities
-          </h2>
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 hover:bg-white text-stone-400 hover:text-stone-600 transition-all"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        <div className="relative shrink-0 px-6 py-5 bg-gradient-to-r from-purple-600 to-indigo-600">
+          <div className="absolute top-3 left-6 w-3 h-3 rounded-full bg-white/20" />
+          <div className="absolute top-6 left-12 w-2 h-2 rounded-full bg-white/15" />
+          <div className="absolute bottom-4 right-16 w-4 h-4 rounded-full bg-white/10" />
+          
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <span className="text-2xl">👥</span> Communities
+            </h2>
+            <button
+              onClick={onClose}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-100">
+        <div className="flex gap-1 p-2 bg-purple-100/50 shrink-0">
           {[
             { id: "browse", label: "🔍 Browse", show: true },
-            { id: "my", label: "⭐ My Communities", show: !!user },
+            { id: "my", label: "⭐ My", show: !!user },
             { id: "create", label: "➕ Create", show: !!user },
             { id: "manage", label: "⚙️ Manage", show: !!user },
           ]
@@ -270,10 +278,10 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
                   setTab(t.id as typeof tab);
                   setSelectedCommunity(null);
                 }}
-                className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                className={`flex-1 py-2 px-2 text-xs font-medium rounded-lg transition-all ${
                   tab === t.id
-                    ? "text-purple-600 border-b-2 border-purple-500"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-white text-purple-700 shadow-sm"
+                    : "text-purple-600/70 hover:text-purple-700 hover:bg-white/50"
                 }`}
               >
                 {t.label}
@@ -576,7 +584,7 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
