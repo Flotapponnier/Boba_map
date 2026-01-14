@@ -117,3 +117,5 @@ export function UserMenu({ user, onLogout, onCreatePost }: UserMenuProps) {
     </div>
   );
 }
+
+
