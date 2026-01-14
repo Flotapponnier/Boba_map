@@ -74,6 +74,13 @@ export default function Home() {
   // Mobile sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Client-side mounted state (for hydration)
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Check auth status on mount
   useEffect(() => {
     fetch("/api/auth/me")
@@ -282,7 +289,7 @@ export default function Home() {
               <span className="hidden sm:inline">Communities</span>
             </button>
 
-            {user ? (
+            {mounted && user ? (
               <UserMenu
                 user={user}
                 onLogout={() => setUser(null)}
