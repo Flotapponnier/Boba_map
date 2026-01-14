@@ -457,12 +457,16 @@ export function Map({
 
   // Animate places appearing one by one with camera movement
   useEffect(() => {
-    // Only trigger animation when places actually change
-    const placesChanged =
-      JSON.stringify(places.map((p) => p.id)) !==
-      JSON.stringify(prevPlacesRef.current.map((p) => p.id));
+    // Reset animation when searching starts or places change
+    const currentIds = places.map((p) => `${p.id}-${p.name}`).join(",");
+    const prevIds = prevPlacesRef.current.map((p) => `${p.id}-${p.name}`).join(",");
+    const placesChanged = currentIds !== prevIds;
 
-    if (!placesChanged) return;
+    // Trigger animation on new search or when places change
+    if (!placesChanged && !isSearching) return;
+    
+    // Don't re-trigger if already showing same results
+    if (!placesChanged && visiblePlaces.length === places.length) return;
 
     prevPlacesRef.current = places;
     setVisiblePlaces([]);
@@ -504,7 +508,7 @@ export function Map({
     return () => {
       timeouts.forEach(clearTimeout);
     };
-  }, [places, onSearchAnimationComplete, playSound]);
+  }, [places, onSearchAnimationComplete, playSound, isSearching]);
 
   // Get the index of a place in the original array
   const getPlaceIndex = (placeId: string): number => {
