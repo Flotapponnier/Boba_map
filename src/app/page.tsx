@@ -280,7 +280,7 @@ export default function Home() {
 
           {/* Communities & Auth section */}
           <div className="flex items-center gap-2 lg:gap-3">
-            {/* Communities button */}
+            {/* Communities button - always visible */}
             <button
               onClick={() => setShowCommunityModal(true)}
               className="px-3 py-2 lg:px-4 lg:py-2.5 bg-gradient-to-r from-purple-400 to-indigo-400 hover:from-purple-500 hover:to-indigo-500 text-white text-sm lg:text-base font-semibold rounded-xl lg:rounded-2xl shadow-lg shadow-purple-200/60 transition-all flex items-center gap-1.5 hover:shadow-xl hover:shadow-purple-300/50 active:scale-[0.98]"
@@ -289,28 +289,31 @@ export default function Home() {
               <span className="hidden sm:inline">Communities</span>
             </button>
 
-            {!mounted ? (
-              <button
-                className="px-3 py-2 lg:px-5 lg:py-2.5 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-sm lg:text-base font-semibold rounded-xl lg:rounded-2xl shadow-lg shadow-amber-200/60 flex items-center gap-1.5 lg:gap-2"
-              >
-                <span className="hidden sm:inline">🧋</span>
-                Sign In
-              </button>
-            ) : user ? (
-              <UserMenu
-                user={user}
-                onLogout={() => setUser(null)}
-                onCreatePost={handleCreatePost}
-              />
-            ) : (
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="px-3 py-2 lg:px-5 lg:py-2.5 bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white text-sm lg:text-base font-semibold rounded-xl lg:rounded-2xl shadow-lg shadow-amber-200/60 transition-all flex items-center gap-1.5 lg:gap-2 hover:shadow-xl hover:shadow-amber-300/50 active:scale-[0.98]"
-              >
-                <span className="hidden sm:inline">🧋</span>
-                Sign In
-              </button>
-            )}
+            {/* Auth button - use suppressHydrationWarning for dynamic content */}
+            <div suppressHydrationWarning>
+              {!mounted ? (
+                <button
+                  className="px-3 py-2 lg:px-5 lg:py-2.5 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-sm lg:text-base font-semibold rounded-xl lg:rounded-2xl shadow-lg shadow-amber-200/60 flex items-center gap-1.5 lg:gap-2"
+                >
+                  <span className="hidden sm:inline">🧋</span>
+                  Sign In
+                </button>
+              ) : user ? (
+                <UserMenu
+                  user={user}
+                  onLogout={() => setUser(null)}
+                  onCreatePost={handleCreatePost}
+                />
+              ) : (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-3 py-2 lg:px-5 lg:py-2.5 bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white text-sm lg:text-base font-semibold rounded-xl lg:rounded-2xl shadow-lg shadow-amber-200/60 transition-all flex items-center gap-1.5 lg:gap-2 hover:shadow-xl hover:shadow-amber-300/50 active:scale-[0.98]"
+                >
+                  <span className="hidden sm:inline">🧋</span>
+                  Sign In
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
