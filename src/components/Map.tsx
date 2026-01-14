@@ -135,17 +135,63 @@ function createBobaMarker(
   });
 }
 
-// User post marker (simpler, with user avatar)
-function createUserPostMarker(color: string, avatarUrl: string) {
+// User post marker with username bubble
+function createUserPostMarker(color: string, avatarUrl: string, username: string, title: string) {
+  // Truncate title for bubble
+  const shortTitle = title.length > 25 ? title.slice(0, 22) + "..." : title;
+  
   return L.divIcon({
     className: "user-post-marker",
     html: `
-      <div style="position: relative; width: 44px; height: 54px;">
+      <div style="position: relative; width: 200px; height: 80px;">
+        <!-- Username and title bubble -->
+        <div style="
+          position: absolute;
+          left: 45px;
+          top: 0;
+          background: white;
+          border-radius: 12px;
+          padding: 6px 10px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          max-width: 150px;
+          font-size: 11px;
+          line-height: 1.3;
+          border: 2px solid ${color};
+        ">
+          <div style="font-weight: 700; color: ${color}; margin-bottom: 2px; font-size: 10px;">
+            @${username}
+          </div>
+          <div style="color: #374151; font-weight: 500;">
+            ${shortTitle}
+          </div>
+          <!-- Triangle pointer -->
+          <div style="
+            position: absolute;
+            left: -8px;
+            top: 12px;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-right: 6px solid ${color};
+          "></div>
+          <div style="
+            position: absolute;
+            left: -5px;
+            top: 13px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-right: 5px solid white;
+          "></div>
+        </div>
+        
         <!-- Avatar circle -->
         <div style="
           position: absolute;
           left: 0;
-          top: 0;
+          top: 5px;
           width: 40px;
           height: 40px;
           border-radius: 50%;
@@ -164,7 +210,7 @@ function createUserPostMarker(color: string, avatarUrl: string) {
         <div style="
           position: absolute;
           left: 16px;
-          top: 38px;
+          top: 43px;
           width: 8px;
           height: 8px;
           background: ${color};
@@ -174,7 +220,7 @@ function createUserPostMarker(color: string, avatarUrl: string) {
         <div style="
           position: absolute;
           left: 19px;
-          top: 44px;
+          top: 49px;
           width: 2px;
           height: 10px;
           background: ${color};
@@ -182,9 +228,9 @@ function createUserPostMarker(color: string, avatarUrl: string) {
         "></div>
       </div>
     `,
-    iconSize: [44, 54],
-    iconAnchor: [20, 54],
-    popupAnchor: [0, -50],
+    iconSize: [200, 80],
+    iconAnchor: [20, 59],
+    popupAnchor: [80, -55],
   });
 }
 
@@ -517,10 +563,13 @@ export function Map({
         // Check if this is a user post
         if (place.isUserPost && place.postData) {
           const postData = place.postData as {
-            user?: { avatarUrl?: string | null };
+            user?: { avatarUrl?: string | null; username?: string };
+            title?: string;
           };
           const avatarUrl = postData.user?.avatarUrl || "/avatars/golden.png";
-          const icon = createUserPostMarker(color, avatarUrl);
+          const username = postData.user?.username || "user";
+          const title = postData.title || place.name;
+          const icon = createUserPostMarker(color, avatarUrl, username, title);
 
           return (
             <Marker
