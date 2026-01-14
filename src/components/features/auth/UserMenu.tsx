@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  avatarUrl: string | null;
-}
+import type { User } from "@/types";
 
 interface UserMenuProps {
   user: User;
@@ -117,5 +111,4 @@ export function UserMenu({ user, onLogout, onCreatePost }: UserMenuProps) {
     </div>
   );
 }
-
 

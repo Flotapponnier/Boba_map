@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { BobaMascot } from "./BobaMascot";
+import { BobaMascot } from "@/components/BobaMascot";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -94,3 +94,4 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
     </div>
   );
 }
+

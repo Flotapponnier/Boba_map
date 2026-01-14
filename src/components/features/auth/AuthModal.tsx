@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import type { User } from "@/types";
 
 // Available Boba avatars
 const AVATARS = [
@@ -15,7 +16,7 @@ const AVATARS = [
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (user: { id: number; username: string; email: string; avatarUrl: string | null }) => void;
+  onSuccess: (user: User) => void;
 }
 
 export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
@@ -275,5 +276,4 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
     </div>
   );
 }
-
 

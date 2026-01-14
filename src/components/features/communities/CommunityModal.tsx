@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import type { User } from "@/types";
 
 interface Community {
   id: number;
@@ -35,7 +36,7 @@ interface JoinRequest {
 interface CommunityModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: { id: number; username: string } | null;
+  user: User | null;
 }
 
 export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
@@ -229,16 +230,16 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[9998] bg-stone-900/30 backdrop-blur-sm transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 z-[9998] bg-stone-900/30 backdrop-blur-sm transition-all duration-300 ${
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
         }`}
         onClick={onClose}
       />
 
       {/* Side Panel */}
       <div
-        className={`fixed top-0 right-0 z-[9999] h-full w-full max-w-md bg-gradient-to-b from-purple-50 to-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 z-[9999] h-full w-full max-w-md bg-gradient-to-b from-purple-50 to-white shadow-2xl flex flex-col transition-all duration-300 ease-out ${
+          isOpen ? "translate-x-0 opacity-100 visible" : "translate-x-full opacity-0 invisible pointer-events-none"
         }`}
       >
         {/* Header */}
@@ -504,7 +505,7 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
                     ))}
                   {communities.filter((c) => c.userRole === "admin").length === 0 && (
                     <div className="text-center py-8 text-gray-500">
-                      You don't admin any communities yet
+                      You don&apos;t admin any communities yet
                     </div>
                   )}
                 </div>
@@ -556,7 +557,7 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
                                 @{req.user?.username || "Unknown"}
                               </p>
                               {req.message && (
-                                <p className="text-sm text-gray-600 mt-1">"{req.message}"</p>
+                                <p className="text-sm text-gray-600 mt-1">&quot;{req.message}&quot;</p>
                               )}
                             </div>
                             <div className="flex gap-2">

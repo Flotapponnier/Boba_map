@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser, getUserById } from "@/lib/auth";
+import { getCurrentUser, getUserById } from "@/server";
 
 export async function GET() {
   const session = await getCurrentUser();

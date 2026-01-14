@@ -30,7 +30,7 @@ export interface Place {
   imageUrl?: string;
   // For user-created posts
   isUserPost?: boolean;
-  postData?: unknown;
+  postData?: PostWithUser;
 }
 
 export interface SearchQuery {
@@ -47,9 +47,48 @@ export interface MapConfig {
   maxZoom: number;
 }
 
+/**
+ * User types
+ */
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  avatarUrl: string | null;
+}
 
+export interface PostUser {
+  id: number;
+  username: string;
+  avatarUrl: string | null;
+}
 
+export interface PostWithUser {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  lat: number;
+  lng: number;
+  address: string | null;
+  price: number | null;
+  user: PostUser | null;
+  rating: number | null;
+  feedbackCount: number;
+  imageUrl?: string | null;
+  createdAt?: Date | null;
+}
 
+export interface Feedback {
+  id: number;
+  postId: number;
+  userId: number;
+  rating: number;
+  comment: string | null;
+  createdAt: Date | null;
+  user?: PostUser;
+}
 
-
-
+export interface PostWithFeedbacks extends PostWithUser {
+  feedbacks: Feedback[];
+}

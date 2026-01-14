@@ -1,40 +1,12 @@
 "use client";
 
 import { useState } from "react";
-
-interface PostWithUser {
-  id: number;
-  title: string;
-  description: string;
-  category: string;
-  lat: number;
-  lng: number;
-  address: string | null;
-  price: number | null;
-  user: {
-    id: number;
-    username: string;
-    avatarUrl: string | null;
-  } | null;
-  rating: number | null;
-  feedbackCount: number;
-  feedbacks?: Array<{
-    id: number;
-    rating: number;
-    comment: string | null;
-    user: {
-      id: number;
-      username: string;
-      avatarUrl: string | null;
-    } | null;
-    createdAt: Date | null;
-  }>;
-}
+import type { PostWithFeedbacks } from "@/types";
 
 interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
-  post: PostWithUser | null;
+  post: PostWithFeedbacks | null;
   isLoggedIn: boolean;
   onLoginRequired: () => void;
   onFeedbackAdded: () => void;
@@ -311,6 +283,4 @@ export function FeedbackModal({
     </div>
   );
 }
-
-
 

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import type { Coordinates } from "@/types";
 
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  selectedPosition: { lat: number; lng: number } | null;
+  selectedPosition: Coordinates | null;
   onRequestPosition: () => void;
 }
 
@@ -276,3 +277,4 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
     </div>
   );
 }
+

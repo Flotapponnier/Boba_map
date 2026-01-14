@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, schema } from "@/db";
-import { getCurrentUser } from "@/lib/auth";
+import { db, schema, getCurrentUser } from "@/server";
+import type { Community } from "@/server/db/schema";
 import { eq, like, or, desc } from "drizzle-orm";
 
 /**
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
 
-    let communities;
+    let communities: Community[] = [];
 
     if (search) {
       // Search communities by name or description

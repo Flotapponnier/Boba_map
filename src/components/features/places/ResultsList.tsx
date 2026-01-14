@@ -102,7 +102,7 @@ export function ResultsList({
         <div className="text-5xl mb-4 animate-bubble">🧋</div>
         <p className="text-stone-500 font-medium">Search for something</p>
         <p className="text-sm text-stone-400 mt-1">
-          Try "cheap hotel" or "best kebab"
+          Try &quot;cheap hotel&quot; or &quot;best kebab&quot;
         </p>
       </div>
     );
@@ -289,3 +289,4 @@ export function ResultsList({
     </div>
   );
 }
+

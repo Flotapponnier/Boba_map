@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { places } from "@/db/schema";
+import { db, schema } from "@/server";
 import { eq, lte, and } from "drizzle-orm";
 import type { PlaceCategory } from "@/types";
 
@@ -43,7 +42,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    conditions.push(eq(places.category, category));
+    conditions.push(eq(schema.places.category, category));
   }
 
   if (maxPrice) {
@@ -54,11 +53,11 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-    conditions.push(lte(places.price, maxPriceNum));
+    conditions.push(lte(schema.places.price, maxPriceNum));
   }
 
   // Query database
-  let query = db.select().from(places);
+  let query = db.select().from(schema.places);
 
   if (conditions.length > 0) {
     query = query.where(and(...conditions)) as typeof query;
