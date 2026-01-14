@@ -8,14 +8,26 @@ import type { Place } from "@/types";
 import { DEFAULT_MAP_CONFIG, OSM_TILE_URL, OSM_ATTRIBUTION, getAvatarByIndex, getFeedback, getBookingLink } from "@/constants";
 import { useBubbleSound } from "@/hooks";
 
-const CATEGORY_COLORS: Record<string, string> = {
-  accommodation: "#3B82F6", // blue
-  food: "#F97316", // orange
-  event: "#8B5CF6", // purple
-  service: "#10B981", // green
-  activity: "#EC4899", // pink
+// Category colors - distinct and visible
+export const CATEGORY_COLORS: Record<string, string> = {
+  accommodation: "#1E293B", // dark slate (hotel)
+  food: "#EA580C", // orange (restaurant)
+  event: "#EAB308", // yellow (events)
+  service: "#10B981", // emerald green
+  activity: "#3B82F6", // blue
   transport: "#6B7280", // gray
-  nightlife: "#EF4444", // red
+  nightlife: "#9333EA", // purple (clubs/bars)
+};
+
+// Category labels for legend
+export const CATEGORY_LABELS: Record<string, string> = {
+  accommodation: "🏨 Hotels",
+  food: "🍽️ Restaurants",
+  event: "🎉 Events",
+  service: "🛠️ Services",
+  activity: "🎯 Activities",
+  transport: "🚌 Transport",
+  nightlife: "🎵 Nightlife",
 };
 
 const BOOKING_LABELS: Record<string, string> = {
@@ -322,6 +334,47 @@ function MapClickHandler({ onMapClick, isSelectingPosition }: MapClickHandlerPro
   return null;
 }
 
+// Map Legend Component
+function MapLegend({ visibleCategories }: { visibleCategories: string[] }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  if (visibleCategories.length === 0) return null;
+
+  return (
+    <div className="absolute bottom-6 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full px-3 py-2 flex items-center justify-between gap-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+      >
+        <span>🗺️ Legend</span>
+        <svg
+          className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isExpanded && (
+        <div className="px-3 pb-3 space-y-1.5 border-t border-gray-100 pt-2">
+          {visibleCategories.map((category) => (
+            <div key={category} className="flex items-center gap-2">
+              <div
+                className="w-3 h-3 rounded-full shadow-sm"
+                style={{ backgroundColor: CATEGORY_COLORS[category] || "#6B7280" }}
+              />
+              <span className="text-xs text-gray-600">
+                {CATEGORY_LABELS[category] || category}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface MapProps {
   places: Place[];
   onPlaceSelect?: (place: Place) => void;
@@ -423,15 +476,19 @@ export function Map({
     return places.findIndex((p) => p.id === placeId);
   };
 
+  // Get unique categories from visible places
+  const visibleCategories = [...new Set(visiblePlaces.map((p) => p.category))];
+
   return (
-    <MapContainer
-      center={[DEFAULT_MAP_CONFIG.center.lat, DEFAULT_MAP_CONFIG.center.lng]}
-      zoom={DEFAULT_MAP_CONFIG.zoom}
-      minZoom={DEFAULT_MAP_CONFIG.minZoom}
-      maxZoom={DEFAULT_MAP_CONFIG.maxZoom}
-      className={`h-full w-full ${isSelectingPosition ? "cursor-crosshair" : ""}`}
-    >
-      <TileLayer url={OSM_TILE_URL} attribution={OSM_ATTRIBUTION} />
+    <div className="relative h-full w-full">
+      <MapContainer
+        center={[DEFAULT_MAP_CONFIG.center.lat, DEFAULT_MAP_CONFIG.center.lng]}
+        zoom={DEFAULT_MAP_CONFIG.zoom}
+        minZoom={DEFAULT_MAP_CONFIG.minZoom}
+        maxZoom={DEFAULT_MAP_CONFIG.maxZoom}
+        className={`h-full w-full ${isSelectingPosition ? "cursor-crosshair" : ""}`}
+      >
+        <TileLayer url={OSM_TILE_URL} attribution={OSM_ATTRIBUTION} />
 
       <MapController
         places={places.filter((p) => !p.isUserPost)}
@@ -602,7 +659,11 @@ export function Map({
           </Marker>
         );
       })}
-    </MapContainer>
+      </MapContainer>
+      
+      {/* Legend overlay */}
+      <MapLegend visibleCategories={visibleCategories} />
+    </div>
   );
 }
 
