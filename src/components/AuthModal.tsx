@@ -1,6 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+
+// Available Boba avatars
+const AVATARS = [
+  { id: "golden", name: "Golden Boba", path: "/avatars/golden.png" },
+  { id: "pinky", name: "Pinky Boba", path: "/avatars/pinky.png" },
+  { id: "black", name: "Black Boba", path: "/avatars/black.png" },
+  { id: "diamond", name: "Diamond Boba", path: "/avatars/diamond.png" },
+  { id: "smart", name: "Smart Boba", path: "/avatars/smart.png" },
+];
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -17,6 +27,17 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedAvatarIndex, setSelectedAvatarIndex] = useState(0);
+
+  const selectedAvatar = AVATARS[selectedAvatarIndex];
+
+  const handlePrevAvatar = () => {
+    setSelectedAvatarIndex((prev) => (prev === 0 ? AVATARS.length - 1 : prev - 1));
+  };
+
+  const handleNextAvatar = () => {
+    setSelectedAvatarIndex((prev) => (prev === AVATARS.length - 1 ? 0 : prev + 1));
+  };
 
   if (!isOpen) return null;
 
@@ -29,7 +50,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/signup";
       const body = mode === "login"
         ? { email, password }
-        : { username, email, password };
+        : { username, email, password, avatarUrl: selectedAvatar.path };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -117,20 +138,73 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             {mode === "signup" && (
-              <div>
-                <label className="block text-sm font-semibold text-stone-600 mb-2">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="boba_lover"
-                  required
-                  minLength={3}
-                  className="w-full px-4 py-3.5 rounded-2xl border-2 border-amber-100 bg-amber-50/30 focus:border-amber-300 focus:ring-4 focus:ring-amber-100 outline-none transition-all placeholder:text-stone-400"
-                />
-              </div>
+              <>
+                {/* Avatar Selection */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-stone-600 mb-3 text-center">
+                    Choose your Boba avatar
+                  </label>
+                  <div className="flex items-center justify-center gap-4">
+                    {/* Left Arrow */}
+                    <button
+                      type="button"
+                      onClick={handlePrevAvatar}
+                      className="w-12 h-12 flex items-center justify-center rounded-full bg-amber-100 hover:bg-amber-200 text-amber-600 hover:text-amber-700 transition-all shadow-md hover:shadow-lg active:scale-95"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Avatar Display */}
+                    <div className="flex flex-col items-center">
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 p-1 shadow-xl shadow-amber-200/50 overflow-hidden">
+                        <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                          <Image
+                            src={selectedAvatar.path}
+                            alt={selectedAvatar.name}
+                            width={80}
+                            height={80}
+                            className="object-contain"
+                          />
+                        </div>
+                      </div>
+                      <span className="mt-2 text-sm font-medium text-amber-600">
+                        {selectedAvatar.name}
+                      </span>
+                      <span className="text-xs text-stone-400">
+                        {selectedAvatarIndex + 1} / {AVATARS.length}
+                      </span>
+                    </div>
+
+                    {/* Right Arrow */}
+                    <button
+                      type="button"
+                      onClick={handleNextAvatar}
+                      className="w-12 h-12 flex items-center justify-center rounded-full bg-amber-100 hover:bg-amber-200 text-amber-600 hover:text-amber-700 transition-all shadow-md hover:shadow-lg active:scale-95"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-stone-600 mb-2">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="boba_lover"
+                    required
+                    minLength={3}
+                    className="w-full px-4 py-3.5 rounded-2xl border-2 border-amber-100 bg-amber-50/30 focus:border-amber-300 focus:ring-4 focus:ring-amber-100 outline-none transition-all placeholder:text-stone-400"
+                  />
+                </div>
+              </>
             )}
 
             <div>

@@ -3,7 +3,7 @@ import { signUp, createToken, COOKIE_NAME } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, email, password } = await request.json();
+    const { username, email, password, avatarUrl } = await request.json();
 
     // Validate input
     if (!username || !email || !password) {
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user
-    const user = await signUp(username, email, password);
+    const user = await signUp(username, email, password, avatarUrl);
 
     // Create token
     const token = createToken({

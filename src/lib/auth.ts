@@ -75,7 +75,7 @@ export async function getUserById(userId: number) {
 /**
  * Sign up a new user
  */
-export async function signUp(username: string, email: string, password: string) {
+export async function signUp(username: string, email: string, password: string, avatarUrl?: string) {
   // Check if user exists
   const existing = await db.query.users.findFirst({
     where: eq(schema.users.email, email),
@@ -96,11 +96,14 @@ export async function signUp(username: string, email: string, password: string) 
   // Hash password and create user
   const passwordHash = await hashPassword(password);
   
+  // Default to golden boba if no avatar selected
+  const finalAvatarUrl = avatarUrl || "/avatars/golden.png";
+  
   const result = db.insert(schema.users).values({
     username,
     email,
     passwordHash,
-    avatarUrl: `/avatars/${["golden", "pinky", "black", "diamond", "smart", "trophy"][Math.floor(Math.random() * 6)]}.png`,
+    avatarUrl: finalAvatarUrl,
   }).returning();
   
   const [user] = await result;
