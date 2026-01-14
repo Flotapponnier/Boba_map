@@ -14,15 +14,10 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-const url = process.env.TURSO_DATABASE_URL;
+const url = process.env.TURSO_DATABASE_URL || "file:local.db";
 const authToken = process.env.TURSO_AUTH_TOKEN;
 
-if (!url) {
-  console.error("❌ TURSO_DATABASE_URL not set");
-  process.exit(1);
-}
-
-console.log("🧋 Seeding Turso database...\n");
+console.log(`🧋 Seeding database: ${url}\n`);
 
 const client = createClient({ url, authToken });
 
