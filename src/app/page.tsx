@@ -289,7 +289,14 @@ export default function Home() {
               <span className="hidden sm:inline">Communities</span>
             </button>
 
-            {mounted && user ? (
+            {!mounted ? (
+              <button
+                className="px-3 py-2 lg:px-5 lg:py-2.5 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-sm lg:text-base font-semibold rounded-xl lg:rounded-2xl shadow-lg shadow-amber-200/60 flex items-center gap-1.5 lg:gap-2"
+              >
+                <span className="hidden sm:inline">🧋</span>
+                Sign In
+              </button>
+            ) : user ? (
               <UserMenu
                 user={user}
                 onLogout={() => setUser(null)}
