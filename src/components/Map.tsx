@@ -573,8 +573,21 @@ export function Map({
                 },
               }}
             >
-              <Popup maxWidth={280} minWidth={240}>
+              <Popup maxWidth={300} minWidth={260}>
                 <div className="p-1">
+                  {/* User info header */}
+                  <div className="flex items-center gap-2 mb-3 p-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
+                    <img
+                      src={avatarUrl}
+                      alt={username}
+                      className="w-10 h-10 rounded-full object-contain border-2 border-amber-300"
+                    />
+                    <div>
+                      <p className="font-bold text-amber-700">@{username}</p>
+                      <p className="text-xs text-gray-500">Posted this place</p>
+                    </div>
+                  </div>
+
                   <h3 className="font-bold text-gray-900 text-base mb-1">
                     {place.name}
                   </h3>
