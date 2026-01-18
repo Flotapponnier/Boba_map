@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         checkInDate: checkIn,
         checkOutDate: checkOut,
         priceRange: maxPrice ? `1-${maxPrice}` : undefined,
-        currency: "EUR",
+        currency: "USD",
       },
       apiKey,
       apiSecret
