@@ -143,6 +143,51 @@ export function FeedbackModal({
           {/* Description */}
           <p className="text-gray-600 mb-4">{post.description}</p>
 
+          {/* Event Details - only for events */}
+          {post.category === "event" && (post.eventDate || post.eventTime || post.eventRecurrence) && (
+            <div className="mb-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+              <div className="flex items-center gap-2 text-purple-700 font-semibold mb-3">
+                <span>📅</span> Event Details
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {post.eventDate && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-purple-500">🗓️</span>
+                    <div>
+                      <div className="text-gray-500 text-xs">Date</div>
+                      <div className="font-medium text-gray-800">
+                        {new Date(post.eventDate).toLocaleDateString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {post.eventTime && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-purple-500">🕐</span>
+                    <div>
+                      <div className="text-gray-500 text-xs">Time</div>
+                      <div className="font-medium text-gray-800">{post.eventTime}</div>
+                    </div>
+                  </div>
+                )}
+                {post.eventRecurrence && post.eventRecurrence !== "once" && (
+                  <div className="flex items-center gap-2 col-span-2">
+                    <span className="text-purple-500">🔄</span>
+                    <div>
+                      <div className="text-gray-500 text-xs">Frequency</div>
+                      <div className="font-medium text-gray-800 capitalize">{post.eventRecurrence}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Details */}
           <div className="flex flex-wrap gap-3 mb-6">
             {post.address && (
@@ -152,7 +197,16 @@ export function FeedbackModal({
             )}
             {post.price !== null && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 rounded-full text-sm text-green-700 font-medium">
-                {post.price === 0 ? "Free" : `${post.price}€`}
+                {post.price === 0 ? "Free" : `$${post.price}`}
+              </span>
+            )}
+            {post.community && (
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
+                post.community.isPublic 
+                  ? "bg-blue-100 text-blue-700" 
+                  : "bg-purple-100 text-purple-700"
+              }`}>
+                {post.community.isPublic ? "🌍" : "🔒"} {post.community.name}
               </span>
             )}
           </div>

@@ -243,7 +243,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
             </div>
           </div>
 
-          {/* Event-specific fields */}
+          {/* Event-specific fields - shows when Event category is selected */}
           {category === "event" && (
             <div className="p-4 bg-purple-50 rounded-xl border border-purple-200 space-y-3">
               <div className="flex items-center gap-2 text-purple-700 font-medium text-sm">
