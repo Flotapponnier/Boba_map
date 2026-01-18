@@ -37,6 +37,11 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
   const [address, setAddress] = useState("");
   const [price, setPrice] = useState("");
   
+  // Event-specific fields
+  const [eventDate, setEventDate] = useState("");
+  const [eventTime, setEventTime] = useState("");
+  const [eventRecurrence, setEventRecurrence] = useState<"once" | "daily" | "weekly" | "monthly">("once");
+  
   // Community selector
   const [communities, setCommunities] = useState<UserCommunity[]>([]);
   const [selectedCommunityId, setSelectedCommunityId] = useState<number | null>(null);
@@ -90,9 +95,11 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
         address: address.trim() || null,
         price: price ? parseFloat(price) : null,
         communityId: selectedCommunityId,
+        // Event fields (only sent if category is event)
+        eventDate: category === "event" && eventDate ? eventDate : null,
+        eventTime: category === "event" && eventTime ? eventTime : null,
+        eventRecurrence: category === "event" ? eventRecurrence : null,
       };
-
-      console.log("Creating post with payload:", payload);
 
       const res = await fetch("/api/posts", {
         method: "POST",
@@ -101,7 +108,6 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
       });
 
       const text = await res.text();
-      console.log("API response:", text);
 
       let data;
       try {
@@ -124,6 +130,9 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
       setAddress("");
       setPrice("");
       setSelectedCommunityId(null);
+      setEventDate("");
+      setEventTime("");
+      setEventRecurrence("once");
     } catch (err) {
       console.error("Create post error:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -233,6 +242,71 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
               ))}
             </div>
           </div>
+
+          {/* Event-specific fields */}
+          {category === "event" && (
+            <div className="p-4 bg-purple-50 rounded-xl border border-purple-200 space-y-3">
+              <div className="flex items-center gap-2 text-purple-700 font-medium text-sm">
+                <span>🎉</span> Event Details
+              </div>
+              
+              {/* Date and Time */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full px-3 py-2 rounded-lg border border-purple-200 bg-white focus:border-purple-400 focus:ring-2 focus:ring-purple-200 outline-none transition-all text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Time
+                  </label>
+                  <input
+                    type="time"
+                    value={eventTime}
+                    onChange={(e) => setEventTime(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-purple-200 bg-white focus:border-purple-400 focus:ring-2 focus:ring-purple-200 outline-none transition-all text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Recurrence */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  Frequency
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { id: "once", label: "Once", emoji: "1️⃣" },
+                    { id: "daily", label: "Daily", emoji: "📅" },
+                    { id: "weekly", label: "Weekly", emoji: "🔄" },
+                    { id: "monthly", label: "Monthly", emoji: "📆" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setEventRecurrence(opt.id as "once" | "daily" | "weekly" | "monthly")}
+                      className={`p-2 rounded-lg border transition-all text-center ${
+                        eventRecurrence === opt.id
+                          ? "border-purple-400 bg-purple-100"
+                          : "border-purple-200 bg-white hover:border-purple-300"
+                      }`}
+                    >
+                      <span className="text-sm block">{opt.emoji}</span>
+                      <span className="text-[9px] font-medium text-gray-600">{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Community selector */}
           {communities.length > 0 && (

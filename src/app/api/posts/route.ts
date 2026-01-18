@@ -66,12 +66,22 @@ export async function GET(request: NextRequest) {
       orderBy: desc(schema.posts.createdAt),
     });
 
-    // Filter posts by visibility
+    // Filter posts by visibility and expiration
+    const today = new Date().toISOString().split("T")[0];
     const posts = allPosts.filter((post) => {
-      // No community = visible to all
-      if (!post.communityId) return true;
-      // Has community = check if visible
-      return visibleCommunityIds.includes(post.communityId);
+      // Check visibility first
+      if (post.communityId && !visibleCommunityIds.includes(post.communityId)) {
+        return false;
+      }
+      
+      // Check if event is expired (only for "once" events with a date)
+      if (post.category === "event" && post.eventDate && post.eventRecurrence === "once") {
+        if (post.eventDate < today) {
+          return false; // Expired one-time event
+        }
+      }
+      
+      return true;
     });
 
     // Get user info and community info for each post
@@ -138,7 +148,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, description, category, lat, lng, address, price, imageUrl, communityId } =
+    const { title, description, category, lat, lng, address, price, imageUrl, communityId, eventDate, eventTime, eventRecurrence } =
       body;
 
     // Validate
@@ -195,6 +205,10 @@ export async function POST(request: NextRequest) {
         address: address || null,
         price: price || null,
         imageUrl: imageUrl || null,
+        // Event fields
+        eventDate: eventDate || null,
+        eventTime: eventTime || null,
+        eventRecurrence: eventRecurrence || null,
       })
       .returning();
 

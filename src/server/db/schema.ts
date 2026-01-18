@@ -27,6 +27,10 @@ export const posts = sqliteTable("posts", {
   address: text("address"),
   price: real("price"), // optional price
   imageUrl: text("image_url"),
+  // Event-specific fields
+  eventDate: text("event_date"), // YYYY-MM-DD format
+  eventTime: text("event_time"), // HH:MM format
+  eventRecurrence: text("event_recurrence"), // "once", "daily", "weekly", "monthly"
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });

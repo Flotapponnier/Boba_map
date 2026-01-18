@@ -85,6 +85,10 @@ export interface PostWithUser {
   feedbackCount: number;
   imageUrl?: string | null;
   createdAt?: Date | null;
+  // Event fields
+  eventDate?: string | null;
+  eventTime?: string | null;
+  eventRecurrence?: "once" | "daily" | "weekly" | "monthly" | null;
 }
 
 export interface Feedback {
