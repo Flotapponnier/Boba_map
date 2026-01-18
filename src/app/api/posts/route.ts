@@ -10,110 +10,120 @@ import { eq, desc, and, or, isNull, inArray } from "drizzle-orm";
  * - Posts in private communities: visible only to members
  */
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const category = searchParams.get("category");
-  const communityId = searchParams.get("communityId");
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const category = searchParams.get("category");
+    const communityId = searchParams.get("communityId");
 
-  // Get current user to check community memberships
-  const session = await getCurrentUser();
-  
-  // Get user's community memberships
-  let userCommunityIds: number[] = [];
-  if (session) {
-    const memberships = await db.query.communityMembers.findMany({
-      where: eq(schema.communityMembers.userId, session.userId),
-      columns: { communityId: true },
-    });
-    userCommunityIds = memberships.map((m) => m.communityId);
-  }
-
-  // Get all public communities
-  const publicCommunities = await db.query.communities.findMany({
-    where: eq(schema.communities.isPublic, true),
-    columns: { id: true },
-  });
-  const publicCommunityIds = publicCommunities.map((c) => c.id);
-
-  // Build visibility filter
-  // A post is visible if:
-  // 1. It has no community (communityId is null), OR
-  // 2. It belongs to a public community, OR  
-  // 3. User is a member of the private community
-  const visibleCommunityIds = [...new Set([...publicCommunityIds, ...userCommunityIds])];
-  
-  let whereClause;
-  if (communityId) {
-    // Filtering by specific community
-    const commId = parseInt(communityId);
-    const isVisible = visibleCommunityIds.includes(commId);
-    if (!isVisible) {
-      return NextResponse.json({ posts: [] });
-    }
-    whereClause = category
-      ? and(eq(schema.posts.communityId, commId), eq(schema.posts.category, category))
-      : eq(schema.posts.communityId, commId);
-  } else {
-    // Get all visible posts
-    const visibilityFilter = visibleCommunityIds.length > 0
-      ? or(isNull(schema.posts.communityId), inArray(schema.posts.communityId, visibleCommunityIds))
-      : isNull(schema.posts.communityId);
+    // Get current user to check community memberships
+    const session = await getCurrentUser();
     
-    whereClause = category
-      ? and(visibilityFilter, eq(schema.posts.category, category))
-      : visibilityFilter;
-  }
-
-  const posts = await db.query.posts.findMany({
-    where: whereClause,
-    orderBy: desc(schema.posts.createdAt),
-  });
-
-  // Get user info and community info for each post
-  const postsWithDetails = await Promise.all(
-    posts.map(async (post) => {
-      const user = await db.query.users.findFirst({
-        where: eq(schema.users.id, post.userId),
-        columns: {
-          id: true,
-          username: true,
-          avatarUrl: true,
-        },
+    // Get user's community memberships
+    let userCommunityIds: number[] = [];
+    if (session) {
+      const memberships = await db.query.communityMembers.findMany({
+        where: eq(schema.communityMembers.userId, session.userId),
+        columns: { communityId: true },
       });
+      userCommunityIds = memberships.map((m) => m.communityId);
+    }
 
-      // Get community info if applicable
-      let community = null;
-      if (post.communityId) {
-        community = await db.query.communities.findFirst({
-          where: eq(schema.communities.id, post.communityId),
+    // Get all public communities
+    const publicCommunities = await db.query.communities.findMany({
+      where: eq(schema.communities.isPublic, true),
+      columns: { id: true },
+    });
+    const publicCommunityIds = publicCommunities.map((c) => c.id);
+
+    // Build visibility filter
+    // A post is visible if:
+    // 1. It has no community (communityId is null), OR
+    // 2. It belongs to a public community, OR  
+    // 3. User is a member of the private community
+    const visibleCommunityIds = [...new Set([...publicCommunityIds, ...userCommunityIds])];
+    
+    let whereClause;
+    if (communityId) {
+      // Filtering by specific community
+      const commId = parseInt(communityId);
+      const isVisible = visibleCommunityIds.includes(commId);
+      if (!isVisible) {
+        return NextResponse.json({ posts: [] });
+      }
+      whereClause = category
+        ? and(eq(schema.posts.communityId, commId), eq(schema.posts.category, category))
+        : eq(schema.posts.communityId, commId);
+    } else {
+      // Get all visible posts (no community OR in visible communities)
+      // Note: We need to get posts without community + posts in visible communities
+      whereClause = category
+        ? eq(schema.posts.category, category)
+        : undefined;
+    }
+
+    const allPosts = await db.query.posts.findMany({
+      where: whereClause,
+      orderBy: desc(schema.posts.createdAt),
+    });
+
+    // Filter posts by visibility
+    const posts = allPosts.filter((post) => {
+      // No community = visible to all
+      if (!post.communityId) return true;
+      // Has community = check if visible
+      return visibleCommunityIds.includes(post.communityId);
+    });
+
+    // Get user info and community info for each post
+    const postsWithDetails = await Promise.all(
+      posts.map(async (post) => {
+        const user = await db.query.users.findFirst({
+          where: eq(schema.users.id, post.userId),
           columns: {
             id: true,
-            name: true,
-            isPublic: true,
+            username: true,
+            avatarUrl: true,
           },
         });
-      }
 
-      // Get average rating
-      const feedbacks = await db.query.feedbacks.findMany({
-        where: eq(schema.feedbacks.postId, post.id),
-      });
+        // Get community info if applicable
+        let community = null;
+        if (post.communityId) {
+          community = await db.query.communities.findFirst({
+            where: eq(schema.communities.id, post.communityId),
+            columns: {
+              id: true,
+              name: true,
+              isPublic: true,
+            },
+          });
+        }
 
-      const avgRating =
-        feedbacks.length > 0
-          ? feedbacks.reduce((sum, f) => sum + f.rating, 0) / feedbacks.length
-          : null;
+        // Get average rating
+        const feedbacks = await db.query.feedbacks.findMany({
+          where: eq(schema.feedbacks.postId, post.id),
+        });
 
-      return {
-        ...post,
-        user,
-        community,
-        rating: avgRating,
-        feedbackCount: feedbacks.length,
-      };
-    })
-  );
+        const avgRating =
+          feedbacks.length > 0
+            ? feedbacks.reduce((sum, f) => sum + f.rating, 0) / feedbacks.length
+            : null;
 
-  return NextResponse.json({ posts: postsWithDetails });
+        return {
+          ...post,
+          user,
+          community,
+          rating: avgRating,
+          feedbackCount: feedbacks.length,
+        };
+      })
+    );
+
+    return NextResponse.json({ posts: postsWithDetails });
+  } catch (error) {
+    console.error("GET /api/posts error:", error);
+    return NextResponse.json({ error: "Failed to fetch posts", posts: [] }, { status: 500 });
+  }
 }
 
 /**

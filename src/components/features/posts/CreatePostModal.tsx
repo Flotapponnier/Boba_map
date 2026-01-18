@@ -72,26 +72,43 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
       return;
     }
 
+    if (!title.trim() || !description.trim()) {
+      setError("Title and description are required");
+      return;
+    }
+
     setError(null);
     setLoading(true);
 
     try {
+      const payload = {
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        lat: selectedPosition.lat,
+        lng: selectedPosition.lng,
+        address: address.trim() || null,
+        price: price ? parseFloat(price) : null,
+        communityId: selectedCommunityId,
+      };
+
+      console.log("Creating post with payload:", payload);
+
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          category,
-          lat: selectedPosition.lat,
-          lng: selectedPosition.lng,
-          address: address || null,
-          price: price ? parseFloat(price) : null,
-          communityId: selectedCommunityId,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      console.log("API response:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid response from server");
+      }
 
       if (!res.ok) {
         throw new Error(data.error || "Failed to create post");
@@ -108,6 +125,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
       setPrice("");
       setSelectedCommunityId(null);
     } catch (err) {
+      console.error("Create post error:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
@@ -279,7 +297,6 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Best coffee in town!"
-              required
               maxLength={100}
               className="w-full px-4 py-2.5 rounded-xl border border-amber-200 bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-200 outline-none transition-all placeholder:text-gray-400 text-sm"
             />
@@ -294,7 +311,6 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Tell us why this place is special..."
-              required
               rows={3}
               maxLength={500}
               className="w-full px-4 py-2.5 rounded-xl border border-amber-200 bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-200 outline-none transition-all placeholder:text-gray-400 resize-none text-sm"
@@ -334,7 +350,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
           {/* Submit button */}
           <button
             type="submit"
-            disabled={loading || !selectedPosition}
+            disabled={loading}
             className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-amber-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
           >
             {loading ? (
