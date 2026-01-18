@@ -41,7 +41,19 @@ yarn-error.log*
 next-env.d.ts
 
 # database
-boba.db
-boba.db-shm
-boba.db-wal
-Bobavim
+*.db
+*.db-shm
+*.db-wal
+
+# archives & media (should not be in repo)
+*.zip
+*.rar
+*.7z
+*.tar.gz
+
+# images (except public folder)
+/*.jpg
+/*.jpeg
+/*.png
+/*.gif
+/*.webp
