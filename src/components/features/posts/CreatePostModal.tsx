@@ -40,7 +40,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
   // Event-specific fields
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
-  const [eventRecurrence, setEventRecurrence] = useState<"once" | "daily" | "weekly" | "monthly">("once");
+  const [eventRecurrence, setEventRecurrence] = useState<"once" | "daily" | "weekly" | "monthly" | null>(null);
   
   // Community selector
   const [communities, setCommunities] = useState<UserCommunity[]>([]);
@@ -132,7 +132,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
       setSelectedCommunityId(null);
       setEventDate("");
       setEventTime("");
-      setEventRecurrence("once");
+      setEventRecurrence(null);
     } catch (err) {
       console.error("Create post error:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -277,10 +277,10 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
                 </div>
               </div>
 
-              {/* Recurrence */}
+              {/* Recurrence (optional) */}
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-2">
-                  Frequency
+                  Frequency (optional)
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {[
@@ -292,7 +292,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
                     <button
                       key={opt.id}
                       type="button"
-                      onClick={() => setEventRecurrence(opt.id as "once" | "daily" | "weekly" | "monthly")}
+                      onClick={() => setEventRecurrence(eventRecurrence === opt.id ? null : opt.id as "once" | "daily" | "weekly" | "monthly")}
                       className={`p-2 rounded-lg border transition-all text-center ${
                         eventRecurrence === opt.id
                           ? "border-purple-400 bg-purple-100"
