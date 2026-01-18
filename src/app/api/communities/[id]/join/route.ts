@@ -98,6 +98,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
 /**
  * DELETE /api/communities/[id]/join - Leave a community
+ * If admin/creator leaves, the entire community is deleted
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const session = await getCurrentUser();
@@ -114,19 +115,46 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    // Check if user is the creator
+    // Check if user is the creator/admin
     const community = await db.query.communities.findFirst({
       where: eq(schema.communities.id, communityId),
     });
 
-    if (community && community.creatorId === session.userId) {
-      return NextResponse.json(
-        { error: "Creator cannot leave the community. Delete it instead." },
-        { status: 400 }
-      );
+    if (!community) {
+      return NextResponse.json({ error: "Community not found" }, { status: 404 });
     }
 
-    // Remove membership
+    // If creator/admin leaves, delete the entire community
+    if (community.creatorId === session.userId) {
+      // Delete all related data in order (foreign key constraints)
+      // 1. Delete posts linked to this community
+      await db
+        .delete(schema.posts)
+        .where(eq(schema.posts.communityId, communityId));
+
+      // 2. Delete join requests
+      await db
+        .delete(schema.joinRequests)
+        .where(eq(schema.joinRequests.communityId, communityId));
+
+      // 3. Delete all members
+      await db
+        .delete(schema.communityMembers)
+        .where(eq(schema.communityMembers.communityId, communityId));
+
+      // 4. Delete the community itself
+      await db
+        .delete(schema.communities)
+        .where(eq(schema.communities.id, communityId));
+
+      return NextResponse.json({
+        success: true,
+        message: "Community deleted",
+        deleted: true,
+      });
+    }
+
+    // Regular member leaving - just remove membership
     await db
       .delete(schema.communityMembers)
       .where(

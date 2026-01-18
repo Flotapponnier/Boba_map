@@ -409,7 +409,18 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
                                 <span className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
                                   ✓ {community.userRole === "admin" ? "Admin" : "Member"}
                                 </span>
-                                {community.userRole !== "admin" && (
+                                {community.userRole === "admin" ? (
+                                  <button
+                                    onClick={() => {
+                                      if (confirm("⚠️ As admin, leaving will DELETE the community and all its posts. Continue?")) {
+                                        handleLeave(community);
+                                      }
+                                    }}
+                                    className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-medium rounded-full transition-colors"
+                                  >
+                                    🗑️ Delete
+                                  </button>
+                                ) : (
                                   <button
                                     onClick={() => handleLeave(community)}
                                     className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-full transition-colors"
