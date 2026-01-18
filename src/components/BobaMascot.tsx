@@ -55,3 +55,4 @@ export function BobaMascot({ isSearching, size = 48 }: BobaMascotProps) {
 
 
 
+

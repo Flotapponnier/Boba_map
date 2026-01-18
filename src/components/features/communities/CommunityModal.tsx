@@ -33,6 +33,23 @@ interface JoinRequest {
   } | null;
 }
 
+interface CommunityPost {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  lat: number;
+  lng: number;
+  createdAt: Date;
+  user: {
+    id: number;
+    username: string;
+    avatarUrl: string | null;
+  } | null;
+  rating: number | null;
+  feedbackCount: number;
+}
+
 interface CommunityModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -40,7 +57,7 @@ interface CommunityModalProps {
 }
 
 export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
-  const [tab, setTab] = useState<"browse" | "my" | "create" | "manage">("browse");
+  const [tab, setTab] = useState<"browse" | "my" | "create" | "manage" | "view">("browse");
   const [communities, setCommunities] = useState<Community[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,6 +72,9 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
   // Manage requests
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
   const [pendingRequests, setPendingRequests] = useState<JoinRequest[]>([]);
+
+  // Community posts
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
 
   const loadCommunities = useCallback(async (search?: string, myOnly?: boolean) => {
     setLoading(true);
@@ -195,6 +215,24 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const viewCommunityPosts = async (community: Community) => {
+    setSelectedCommunity(community);
+    setTab("view");
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/posts?communityId=${community.id}`);
+      const data = await res.json();
+      if (data.posts) {
+        setCommunityPosts(data.posts);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load community posts");
     } finally {
       setLoading(false);
     }
@@ -364,33 +402,51 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
                             )}
                           </div>
                         </div>
-                        <div className="shrink-0">
+                        <div className="shrink-0 flex flex-col gap-2">
                           {community.isMember ? (
-                            <div className="flex items-center gap-2">
-                              <span className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                                ✓ {community.userRole === "admin" ? "Admin" : "Member"}
-                              </span>
-                              {community.userRole !== "admin" && (
-                                <button
-                                  onClick={() => handleLeave(community)}
-                                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-full transition-colors"
-                                >
-                                  Leave
-                                </button>
-                              )}
-                            </div>
+                            <>
+                              <div className="flex items-center gap-2">
+                                <span className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                                  ✓ {community.userRole === "admin" ? "Admin" : "Member"}
+                                </span>
+                                {community.userRole !== "admin" && (
+                                  <button
+                                    onClick={() => handleLeave(community)}
+                                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-full transition-colors"
+                                  >
+                                    Leave
+                                  </button>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => viewCommunityPosts(community)}
+                                className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-medium rounded-full transition-colors"
+                              >
+                                📋 View Posts
+                              </button>
+                            </>
                           ) : community.hasPendingRequest ? (
                             <span className="px-3 py-1.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
                               ⏳ Pending
                             </span>
                           ) : (
-                            <button
-                              onClick={() => handleJoin(community)}
-                              disabled={loading}
-                              className="px-4 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-full transition-colors disabled:opacity-50"
-                            >
-                              {community.isPublic ? "Join" : "Request to Join"}
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleJoin(community)}
+                                disabled={loading}
+                                className="px-4 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-full transition-colors disabled:opacity-50"
+                              >
+                                {community.isPublic ? "Join" : "Request to Join"}
+                              </button>
+                              {community.isPublic && (
+                                <button
+                                  onClick={() => viewCommunityPosts(community)}
+                                  className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-medium rounded-full transition-colors"
+                                >
+                                  📋 View Posts
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
@@ -582,6 +638,89 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
                 </div>
               )}
             </>
+          )}
+
+          {/* View Community Posts Tab */}
+          {tab === "view" && selectedCommunity && (
+            <div>
+              <button
+                onClick={() => {
+                  setSelectedCommunity(null);
+                  setTab("browse");
+                }}
+                className="flex items-center gap-2 text-purple-600 hover:text-purple-700 mb-4"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to communities
+              </button>
+
+              {/* Community header */}
+              <div className="p-4 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-xl mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shadow-md">
+                    {selectedCommunity.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-800">{selectedCommunity.name}</h3>
+                    <p className="text-sm text-gray-600">
+                      {selectedCommunity.isPublic ? "🌍 Public" : "🔒 Private"} • {selectedCommunity.memberCount} members
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <h4 className="font-semibold text-gray-700 mb-3">📋 Community Posts</h4>
+
+              {loading ? (
+                <div className="text-center py-8 text-gray-500">Loading posts...</div>
+              ) : communityPosts.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3">📭</div>
+                  <p className="text-gray-500">No posts in this community yet</p>
+                  <p className="text-sm text-gray-400 mt-1">Be the first to share something!</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {communityPosts.map((post) => (
+                    <div
+                      key={post.id}
+                      className="p-4 bg-white rounded-xl border border-purple-100 hover:border-purple-200 transition-colors"
+                    >
+                      <div className="flex items-start gap-3">
+                        {post.user?.avatarUrl ? (
+                          <Image
+                            src={post.user.avatarUrl}
+                            alt={post.user.username}
+                            width={40}
+                            height={40}
+                            className="rounded-xl"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                            👤
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-800 truncate">{post.title}</h4>
+                          <p className="text-sm text-gray-600 line-clamp-2 mt-1">{post.description}</p>
+                          <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                            <span>by @{post.user?.username || "Unknown"}</span>
+                            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+                              {post.category}
+                            </span>
+                            {post.rating !== null && (
+                              <span className="text-amber-500 font-medium">★ {post.rating.toFixed(1)}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

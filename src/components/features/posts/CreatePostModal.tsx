@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Coordinates } from "@/types";
+
+interface UserCommunity {
+  id: number;
+  name: string;
+  isPublic: boolean;
+}
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -30,6 +36,31 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
   const [category, setCategory] = useState("food");
   const [address, setAddress] = useState("");
   const [price, setPrice] = useState("");
+  
+  // Community selector
+  const [communities, setCommunities] = useState<UserCommunity[]>([]);
+  const [selectedCommunityId, setSelectedCommunityId] = useState<number | null>(null);
+  const [loadingCommunities, setLoadingCommunities] = useState(false);
+
+  // Load user's communities when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setLoadingCommunities(true);
+      fetch("/api/communities?my=true")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.communities) {
+            setCommunities(data.communities.map((c: { id: number; name: string; isPublic: boolean }) => ({
+              id: c.id,
+              name: c.name,
+              isPublic: c.isPublic,
+            })));
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoadingCommunities(false));
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -56,6 +87,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
           lng: selectedPosition.lng,
           address: address || null,
           price: price ? parseFloat(price) : null,
+          communityId: selectedCommunityId,
         }),
       });
 
@@ -74,6 +106,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
       setCategory("food");
       setAddress("");
       setPrice("");
+      setSelectedCommunityId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -182,6 +215,59 @@ export function CreatePostModal({ isOpen, onClose, onSuccess, selectedPosition, 
               ))}
             </div>
           </div>
+
+          {/* Community selector */}
+          {communities.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Post to Community (optional)
+              </label>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCommunityId(null)}
+                  className={`w-full p-3 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${
+                    selectedCommunityId === null
+                      ? "border-amber-400 bg-amber-50"
+                      : "border-gray-200 bg-white hover:border-amber-200"
+                  }`}
+                >
+                  <span className="text-lg">🌍</span>
+                  <div>
+                    <div className="font-medium text-gray-800 text-sm">Public (Everyone)</div>
+                    <div className="text-xs text-gray-500">Visible to all users</div>
+                  </div>
+                </button>
+                
+                {loadingCommunities ? (
+                  <div className="text-center py-2 text-gray-400 text-sm">Loading communities...</div>
+                ) : (
+                  communities.map((community) => (
+                    <button
+                      key={community.id}
+                      type="button"
+                      onClick={() => setSelectedCommunityId(community.id)}
+                      className={`w-full p-3 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${
+                        selectedCommunityId === community.id
+                          ? "border-purple-400 bg-purple-50"
+                          : "border-gray-200 bg-white hover:border-purple-200"
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">
+                        {community.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-800 text-sm truncate">{community.name}</div>
+                        <div className="text-xs text-gray-500">
+                          {community.isPublic ? "🌍 Public community" : "🔒 Private - Members only"}
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Title */}
           <div>

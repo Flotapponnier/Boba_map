@@ -63,6 +63,12 @@ export interface PostUser {
   avatarUrl: string | null;
 }
 
+export interface PostCommunity {
+  id: number;
+  name: string;
+  isPublic: boolean;
+}
+
 export interface PostWithUser {
   id: number;
   title: string;
@@ -73,6 +79,8 @@ export interface PostWithUser {
   address: string | null;
   price: number | null;
   user: PostUser | null;
+  community: PostCommunity | null;
+  communityId: number | null;
   rating: number | null;
   feedbackCount: number;
   imageUrl?: string | null;
@@ -92,3 +100,4 @@ export interface Feedback {
 export interface PostWithFeedbacks extends PostWithUser {
   feedbacks: Feedback[];
 }
+

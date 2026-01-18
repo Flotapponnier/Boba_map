@@ -18,6 +18,7 @@ export const users = sqliteTable("users", {
 export const posts = sqliteTable("posts", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").notNull().references(() => users.id),
+  communityId: integer("community_id").references(() => communities.id), // optional link to a community
   title: text("title").notNull(),
   description: text("description").notNull(),
   category: text("category").notNull(), // accommodation, food, event, activity, service, nightlife
