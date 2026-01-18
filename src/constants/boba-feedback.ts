@@ -54,51 +54,51 @@ export const BOBA_AVATARS: BobaAvatar[] = [
 const FEEDBACK_TEMPLATES = {
   accommodation: {
     cheap: [
-      "Great value for money! Perfect for budget travelers 💰",
+      "Great value for ETH Denver! Perfect for builders 💰",
       "Clean and cozy! You won't find better at this price 🛏️",
       "I stayed here last month - super comfy! 😴",
-      "Best budget option in Stuttgart, trust me! ⭐",
-      "Save money, spend on experiences! Smart choice 🧠",
+      "Best budget option in Denver, trust me! ⭐",
+      "Save money, spend on hackathons! Smart choice 🧠",
     ],
     expensive: [
-      "Pure luxury! Treat yourself, you deserve it ✨",
+      "Pure luxury! Treat yourself after shipping 🚀",
       "The spa here is AMAZING! 5 stars all the way 🌟",
       "This is where I go for special occasions 🎉",
-      "Top-tier service, worth every euro 💎",
-      "The views from the rooftop bar... incredible! 🌃",
+      "Top-tier service, worth every dollar 💎",
+      "The views from the rooftop... Denver mountains! 🏔️",
     ],
   },
   food: {
     cheap: [
-      "Best kebab in town! My go-to spot 🥙",
+      "Best tacos in Denver! My go-to spot 🌮",
       "Huge portions, tiny prices! Love it 😋",
       "The secret sauce is legendary! 🤫",
-      "I come here every week, never disappoints 👌",
-      "Authentic taste, friendly staff! ❤️",
+      "ETH Denver devs come here every day 👌",
+      "Authentic Colorado taste, friendly staff! ❤️",
     ],
     expensive: [
       "Michelin-quality experience! Chef's kiss 👨‍🍳",
       "The tasting menu is a journey! 🍽️",
-      "Perfect for date night! Romantic vibes 💕",
-      "Best fine dining in Stuttgart, period. 🏆",
-      "The wine pairing is exceptional! 🍷",
+      "Perfect for celebrating your grant! 💕",
+      "Best fine dining in Denver, period. 🏆",
+      "The craft beer pairing is exceptional! 🍺",
     ],
   },
   event: {
     default: [
-      "Met amazing people here! Great community 🤝",
-      "Don't miss this one! Super interesting 🎯",
-      "I learned so much! Highly recommend 📚",
-      "The energy is always incredible! ⚡",
-      "Best networking opportunity in the city 🌐",
+      "Met amazing builders here! Great community 🤝",
+      "Don't miss this side event! Super interesting 🎯",
+      "I learned so much about web3! Highly recommend 📚",
+      "The energy at ETH Denver is incredible! ⚡",
+      "Best networking opportunity for builders 🌐",
     ],
   },
   nightlife: {
     default: [
       "The DJ here is fire! 🔥",
-      "Best cocktails in Stuttgart! 🍸",
+      "Best cocktails in Denver! 🍸",
       "Vibes are immaculate! Party time 🎊",
-      "This place gets LIT on weekends! 💃",
+      "ETH Denver after parties here! 💃",
       "My favorite spot for a night out! 🌙",
     ],
   },
@@ -176,7 +176,7 @@ export function getFeedback(
  */
 export function getBookingLink(name: string, category: string): string | null {
   const encodedName = encodeURIComponent(name);
-  const encodedCity = encodeURIComponent("Stuttgart");
+  const encodedCity = encodeURIComponent("Denver");
 
   switch (category) {
     case "accommodation":

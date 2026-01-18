@@ -105,7 +105,7 @@ async function getAccessToken(apiKey: string, apiSecret: string): Promise<string
  * Search hotels by city code
  */
 export interface HotelSearchParams {
-  cityCode: string; // IATA city code (e.g., "STR" for Stuttgart)
+  cityCode: string; // IATA city code (e.g., "DEN" for Denver)
   checkInDate: string; // Format: YYYY-MM-DD
   checkOutDate: string; // Format: YYYY-MM-DD
   adults?: number;
@@ -269,6 +269,7 @@ export async function searchHotels(
 
 // City codes for common cities
 export const CITY_CODES: Record<string, string> = {
+  denver: "DEN",
   stuttgart: "STR",
   berlin: "BER",
   munich: "MUC",

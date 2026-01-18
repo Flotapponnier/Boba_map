@@ -6,7 +6,7 @@ import { searchHotels, getCityCode } from "@/services/amadeus";
  * Search hotels via Amadeus API
  *
  * Query params:
- * - city: City name (e.g., "Stuttgart")
+ * - city: City name (e.g., "Denver")
  * - checkIn: Check-in date (YYYY-MM-DD)
  * - checkOut: Check-out date (YYYY-MM-DD)
  * - maxPrice: Maximum price (optional)
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   const cityCode = getCityCode(city);
   if (!cityCode) {
     return NextResponse.json(
-      { error: `Unknown city: ${city}. Supported: Stuttgart, Berlin, Paris, etc.` },
+      { error: `Unknown city: ${city}. Supported: Denver, Berlin, Paris, etc.` },
       { status: 400 }
     );
   }

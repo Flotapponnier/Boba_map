@@ -1,15 +1,16 @@
 import type { MapConfig } from "@/types";
 
 /**
- * Stuttgart city center coordinates
+ * Denver city center coordinates (ETH Denver 2026)
+ * National Western Complex area
  */
-export const STUTTGART_CENTER = {
-  lat: 48.7758,
-  lng: 9.1829,
+export const DENVER_CENTER = {
+  lat: 39.7392,
+  lng: -104.9903,
 } as const;
 
 export const DEFAULT_MAP_CONFIG: MapConfig = {
-  center: STUTTGART_CENTER,
+  center: DENVER_CENTER,
   zoom: 14,
   minZoom: 10,
   maxZoom: 18,

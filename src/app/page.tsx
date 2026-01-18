@@ -118,7 +118,7 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-lg lg:text-xl font-bold text-stone-800 tracking-tight">Boba</h1>
-              <p className="text-xs text-stone-400 -mt-0.5 hidden sm:block">Stuttgart</p>
+              <p className="text-xs text-stone-400 -mt-0.5 hidden sm:block">ETH Denver 2026</p>
             </div>
           </div>
 

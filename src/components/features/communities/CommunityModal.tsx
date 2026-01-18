@@ -468,7 +468,7 @@ export function CommunityModal({ isOpen, onClose, user }: CommunityModalProps) {
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  placeholder="e.g., Bitcoin Stuttgart"
+                  placeholder="e.g., ETH Denver Builders"
                   className="w-full px-4 py-3 rounded-xl border-2 border-purple-100 bg-purple-50/30 focus:border-purple-300 focus:ring-2 focus:ring-purple-100 outline-none transition-all"
                 />
               </div>
