@@ -2,6 +2,7 @@
   "name": "boba",
   "version": "0.1.1",
   "private": true,
+  "description": "Natural language map for ETH Denver",,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
