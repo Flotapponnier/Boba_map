@@ -42,3 +42,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 | Name          | Email                |
 | :------------ | :------------------- |
 | Frank Dierolf | frank_dierolf@web.de |
+
