@@ -43,3 +43,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 | :------------ | :------------------- |
 | Frank Dierolf | frank_dierolf@web.de |
 
+### Tech Stack
+- Next.js 16
+- Drizzle ORM
+- SQLite
