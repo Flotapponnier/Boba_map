@@ -47,3 +47,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - Next.js 16
 - Drizzle ORM
 - SQLite
+
+Happy BUIDLing! 🧋
